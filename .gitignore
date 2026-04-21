@@ -9,6 +9,9 @@ venv/
 node_modules/
 dist/
 
+# Docker
+postgres_data/
+
 # IDE
 .vscode/
 .idea/

@@ -1,22 +1,27 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import api from '../services/api'
+import { useAuthStore } from '../stores/authStore'
 
 const router = useRouter()
+const auth = useAuthStore()
 const email = ref('')
 const password = ref('')
 const error = ref('')
 const exito = ref(false)
+const cargando = ref(false)
 
 async function handleRegistro() {
   error.value = ''
+  cargando.value = true
   try {
-    await api.post('/auth/registro', { email: email.value, password: password.value })
+    await auth.registro(email.value, password.value)
     exito.value = true
     setTimeout(() => router.push('/login'), 1500)
   } catch (e) {
     error.value = e.response?.data?.detail || 'Error al registrarse'
+  } finally {
+    cargando.value = false
   }
 }
 </script>
@@ -37,8 +42,8 @@ async function handleRegistro() {
         <label class="block text-sm font-medium mb-1">Contraseña</label>
         <input v-model="password" type="password" required minlength="6" class="w-full border rounded px-3 py-2" />
       </div>
-      <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">
-        Registrarse
+      <button type="submit" :disabled="cargando" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 disabled:opacity-60">
+        {{ cargando ? 'Registrando...' : 'Registrarse' }}
       </button>
       <p class="mt-4 text-center text-sm">
         ¿Ya tienes cuenta?

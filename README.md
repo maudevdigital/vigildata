@@ -2,24 +2,211 @@
 
 ## Versiones del entorno
 
-| Herramienta         | Versión   |
-|---------------------|-----------|
-| Python              | 3.13.12   |
-| Node.js             | 22.15.0   |
-| npm                 | 11.5.2    |
-| FastAPI             | 0.115.0   |
-| Vue                 | 3.5.x     |
-| Vite                | 6.x       |
-| PostgreSQL (Supabase)| 15+      |
+| Herramienta | Versión  |
+|-------------|----------|
+| Python      | 3.13     |
+| Node.js     | 20+      |
+| npm         | 10+      |
+| FastAPI     | 0.115.0  |
+| Vue         | 3.5.x    |
+| Vite        | 6.x      |
+| Supabase    | Cloud    |
 
 ---
 
 ## Requisitos previos
 
-1. **Python 3.12+** — [https://www.python.org/downloads/](https://www.python.org/downloads/)
+1. **Python 3.13+** — [https://www.python.org/downloads/](https://www.python.org/downloads/)
 2. **Node.js 20+** — [https://nodejs.org/](https://nodejs.org/)
-3. **Git** — [https://git-scm.com/](https://git-scm.com/)
-4. **Cuenta en Supabase** (gratuita) — [https://supabase.com/](https://supabase.com/) para la base de datos PostgreSQL.
+3. **Cuenta Supabase** — [https://supabase.com/](https://supabase.com/)
+4. **Git** — [https://git-scm.com/](https://git-scm.com/)
+
+---
+
+## 1. Clonar el repositorio
+
+```bash
+git clone https://github.com/maudevdigital/vigildata.git
+cd vigildata
+```
+
+---
+
+## 2. Configurar Supabase
+
+1. Crear un proyecto en [supabase.com](https://supabase.com)
+2. Ir a **Project Settings → Database → Connection string → Session pooler**
+3. Copiar la URI (formato: `postgresql://postgres.xxxxx:[PASSWORD]@aws-x-region.pooler.supabase.com:5432/postgres`)
+4. Ir a **Project Settings → API Keys** y copiar la `publishable key` y la `secret key`
+
+---
+
+## 3. Backend (FastAPI)
+
+```bash
+cd vigildata-backend
+python -m venv venv
+
+# Windows (PowerShell)
+.\venv\Scripts\Activate.ps1
+# macOS / Linux
+source venv/bin/activate
+
+pip install -r requirements.txt
+```
+
+Crear el archivo `.env` en `vigildata-backend/`:
+
+```env
+DATABASE_URL=postgresql://postgres.xxxxx:[PASSWORD]@aws-x-region.pooler.supabase.com:5432/postgres?sslmode=require
+SECRET_KEY=una-clave-secreta-segura
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=60
+```
+
+Ejecutar el servidor:
+
+```bash
+uvicorn app.main:app --reload
+```
+
+El backend levanta en **http://localhost:8000** y crea las tablas automáticamente en Supabase al iniciar, junto con el usuario admin por defecto.
+
+---
+
+## 4. Frontend (Vue 3)
+
+```bash
+cd vigildata-frontend
+npm install
+```
+
+Crear el archivo `.env` en `vigildata-frontend/`:
+
+```env
+VITE_SUPABASE_URL=https://xxxxx.supabase.co
+VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_xxxxx
+```
+
+Iniciar el servidor de desarrollo:
+
+```bash
+npm run dev
+```
+
+El frontend levanta en **http://localhost:5173**
+
+---
+
+## 5. Credenciales por defecto
+
+| Rol      | Email                  | Contraseña |
+|----------|------------------------|------------|
+| ANALISTA | admin@vigildata.cl     | admin123   |
+
+---
+
+## 6. Estructura del proyecto
+
+```
+vigildata/
+├── README.md
+│
+├── vigildata-backend/          # API REST (FastAPI)
+│   ├── .env                    # Variables de entorno (no subir al repo)
+│   ├── requirements.txt
+│   └── app/
+│       ├── main.py             # Punto de entrada + seed admin
+│       ├── config.py           # Variables de entorno
+│       ├── database.py         # Conexión a Supabase (psycopg)
+│       ├── models/             # Modelos SQLAlchemy
+│       │   ├── usuario.py      # Rol: CIUDADANO / ANALISTA
+│       │   └── incidente.py
+│       ├── schemas/            # DTOs Pydantic
+│       │   ├── usuario.py
+│       │   └── incidente.py
+│       └── routers/            # Endpoints REST
+│           ├── auth.py         # /auth/registro, /auth/login, /auth/me
+│           └── incidentes.py   # /incidentes (CRUD)
+│
+└── vigildata-frontend/         # SPA (Vue 3)
+    ├── .env                    # Variables de entorno (no subir al repo)
+    ├── vite.config.js
+    ├── tailwind.config.js
+    ├── package.json
+    └── src/
+        ├── main.js
+        ├── App.vue             # Navbar dinámica según rol
+        ├── router/index.js     # Guards de autenticación y rol
+        ├── services/api.js     # Cliente Axios
+        ├── utils/supabase.ts   # Cliente Supabase JS
+        ├── stores/
+        │   ├── authStore.js    # Estado de autenticación (Pinia)
+        │   └── incidentesStore.js
+        └── views/
+            ├── HomeView.vue
+            ├── LoginView.vue
+            ├── RegistroView.vue
+            ├── MapaView.vue
+            ├── ReportarView.vue
+            └── AdminView.vue   # Solo ANALISTA
+```
+
+---
+
+## 7. Stack tecnológico
+
+| Capa          | Tecnología                         | Versión   |
+|---------------|------------------------------------|-----------|
+| Frontend      | Vue 3 + Vite + Pinia + TailwindCSS | 3.5 / 6.x |
+| Mapa          | Leaflet.js + OpenStreetMap         | 1.9.4     |
+| Backend       | FastAPI + Pydantic + SQLAlchemy    | 0.115.0   |
+| Base de datos | Supabase (PostgreSQL 16)           | Cloud     |
+| Autenticación | JWT (python-jose) + bcrypt         | HS256     |
+| HTTP Client   | Axios                              | 1.7.7     |
+| Supabase JS   | @supabase/supabase-js              | 2.x       |
+
+---
+
+## 8. Endpoints de la API
+
+| Método | Ruta              | Descripción           | Auth     |
+|--------|-------------------|-----------------------|----------|
+| GET    | /                 | Health check          | No       |
+| POST   | /auth/registro    | Crear cuenta          | No       |
+| POST   | /auth/login       | Obtener token JWT     | No       |
+| GET    | /auth/me          | Datos del usuario     | Sí       |
+| POST   | /incidentes/      | Crear incidente       | Sí       |
+| GET    | /incidentes/      | Listar incidentes     | No       |
+
+Documentación interactiva: **http://localhost:8000/docs**
+
+**Filtros disponibles en GET /incidentes/:**
+- `?comuna=Santiago`
+- `?fecha_inicio=2026-01-01T00:00:00`
+- `?fecha_fin=2026-12-31T23:59:59`
+
+---
+
+## 9. Solución de problemas
+
+| Problema | Solución |
+|----------|----------|
+| `getaddrinfo failed` en backend | Usar Session Pooler de Supabase (no la URL directa). |
+| Error `bcrypt` al iniciar | Ejecutar `pip install bcrypt==4.0.1` en el venv. |
+| CORS error en navegador | Verificar que backend corra en `localhost:8000` y frontend en `localhost:5173`. |
+| 401 en login | Verificar que el hash de la contraseña en la BD sea de bcrypt 4.x. |
+| Leaflet no muestra mapa | Verificar conexión a internet (tiles desde OpenStreetMap). |
+
+
+---
+
+## Requisitos previos
+
+1. **Docker Desktop** — [https://www.docker.com/products/docker-desktop](https://www.docker.com/products/docker-desktop)
+2. **Git** — [https://git-scm.com/](https://git-scm.com/)
+
+> Para desarrollo local sin Docker también necesitas Python 3.13+ y Node.js 20+.
 
 ---
 
@@ -32,94 +219,87 @@ cd vigildata
 
 ---
 
-## 2. Configurar el Backend (FastAPI)
+## 2. Levantar con Docker (recomendado)
 
-### 2.1 Crear entorno virtual e instalar dependencias
+### 2.1 Construir y levantar todos los servicios
+
+```bash
+docker-compose up --build
+```
+
+Esto levanta automáticamente:
+- **PostgreSQL 16** en el puerto `5432` (base de datos `vigildata` creada automáticamente)
+- **Backend FastAPI** en `http://localhost:8000`
+- **Frontend Vue** en `http://localhost:5173`
+
+### 2.2 Verificar que todo funciona
+
+```bash
+# Backend
+curl http://localhost:8000/
+# Respuesta esperada: {"status":"ok","proyecto":"VigilData"}
+```
+
+Abre **http://localhost:5173** en el navegador para ver la aplicación.
+
+### 2.3 Detener los servicios
+
+```bash
+docker-compose down
+```
+
+Para eliminar también los datos de la base de datos:
+
+```bash
+docker-compose down -v
+```
+
+---
+
+## 3. Desarrollo local (sin Docker)
+
+### 3.1 Backend
 
 ```bash
 cd vigildata-backend
 python -m venv venv
-```
 
-**Activar el entorno virtual:**
+# Windows (PowerShell)
+.\venv\Scripts\Activate.ps1
+# macOS / Linux
+source venv/bin/activate
 
-- **Windows (PowerShell):**
-  ```powershell
-  .\venv\Scripts\Activate.ps1
-  ```
-- **macOS / Linux:**
-  ```bash
-  source venv/bin/activate
-  ```
-
-**Instalar dependencias:**
-
-```bash
 pip install -r requirements.txt
 ```
 
-### 2.2 Configurar variables de entorno
-
-Copiar el archivo de ejemplo y editarlo con tus credenciales de Supabase:
+Copiar y configurar variables de entorno:
 
 ```bash
 cp .env.example .env
 ```
 
-Editar `.env`:
+`.env` para desarrollo local:
 
 ```env
-DATABASE_URL=postgresql://postgres.<ref>:<password>@aws-0-us-east-1.pooler.supabase.com:6543/postgres
-SECRET_KEY=una-clave-secreta-segura-de-al-menos-32-caracteres
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/vigildata
+SECRET_KEY=dev-secret-key-vigildata-2026
 ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=60
 ```
 
-> La URL de conexión se obtiene desde **Supabase → Project Settings → Database → Connection string (URI)**.
-
-### 2.3 Ejecutar el servidor de desarrollo
+Ejecutar el servidor:
 
 ```bash
-uvicorn app.main:app --reload
+python -m uvicorn app.main:app --reload
 ```
 
-La API estará disponible en:
-- **http://localhost:8000** — Raíz
-- **http://localhost:8000/docs** — Documentación Swagger automática
-
-### 2.4 Verificar que funciona
-
-```bash
-curl http://localhost:8000/
-# Respuesta esperada: {"status":"ok","proyecto":"VigilData"}
-```
-
----
-
-## 3. Configurar el Frontend (Vue 3)
-
-### 3.1 Instalar dependencias
+### 3.2 Frontend
 
 ```bash
 cd vigildata-frontend
 npm install
-```
-
-### 3.2 Ejecutar el servidor de desarrollo
-
-```bash
 npm run dev
 ```
-
-La aplicación estará disponible en **http://localhost:5173**.
-
-### 3.3 Build de producción
-
-```bash
-npm run build
-```
-
-Los archivos estáticos se generan en `dist/`.
 
 ---
 
@@ -127,70 +307,77 @@ Los archivos estáticos se generan en `dist/`.
 
 ```
 vigildata/
+├── docker-compose.yml          # Orquestación de servicios
+├── README.md
+│
 ├── vigildata-backend/          # API REST (FastAPI)
-│   ├── app/
-│   │   ├── main.py             # Punto de entrada de la API
-│   │   ├── config.py           # Variables de entorno
-│   │   ├── database.py         # Conexión a PostgreSQL
-│   │   ├── models/             # Modelos SQLAlchemy
-│   │   │   ├── usuario.py
-│   │   │   └── incidente.py
-│   │   ├── schemas/            # DTOs Pydantic
-│   │   │   ├── usuario.py
-│   │   │   └── incidente.py
-│   │   └── routers/            # Endpoints REST
-│   │       ├── auth.py         # /auth/registro, /auth/login
-│   │       └── incidentes.py   # /incidentes (CRUD)
+│   ├── Dockerfile
+│   ├── .dockerignore
+│   ├── .env.example
 │   ├── requirements.txt
-│   └── .env.example
+│   └── app/
+│       ├── main.py             # Punto de entrada
+│       ├── config.py           # Variables de entorno
+│       ├── database.py         # Conexión a PostgreSQL
+│       ├── models/             # Modelos SQLAlchemy
+│       │   ├── usuario.py
+│       │   └── incidente.py
+│       ├── schemas/            # DTOs Pydantic
+│       │   ├── usuario.py
+│       │   └── incidente.py
+│       └── routers/            # Endpoints REST
+│           ├── auth.py         # /auth/registro, /auth/login
+│           └── incidentes.py   # /incidentes (CRUD)
 │
-├── vigildata-frontend/         # SPA (Vue 3)
-│   ├── src/
-│   │   ├── main.js             # Punto de entrada
-│   │   ├── App.vue             # Layout principal
-│   │   ├── router/index.js     # Rutas
-│   │   ├── stores/             # Pinia stores
-│   │   │   ├── authStore.js
-│   │   │   └── incidentesStore.js
-│   │   ├── services/api.js     # Cliente Axios
-│   │   └── views/              # Vistas
-│   │       ├── HomeView.vue
-│   │       ├── LoginView.vue
-│   │       ├── RegistroView.vue
-│   │       ├── MapaView.vue
-│   │       └── ReportarView.vue
-│   ├── package.json
-│   ├── vite.config.js
-│   └── tailwind.config.js
-│
-└── README.md
+└── vigildata-frontend/         # SPA (Vue 3)
+    ├── Dockerfile
+    ├── .dockerignore
+    ├── vite.config.js
+    ├── tailwind.config.js
+    ├── package.json
+    └── src/
+        ├── main.js
+        ├── App.vue
+        ├── router/index.js
+        ├── services/api.js     # Cliente Axios
+        ├── stores/
+        │   ├── authStore.js
+        │   └── incidentesStore.js
+        └── views/
+            ├── HomeView.vue
+            ├── LoginView.vue
+            ├── RegistroView.vue
+            ├── MapaView.vue
+            └── ReportarView.vue
 ```
 
 ---
 
 ## 5. Stack tecnológico
 
-| Capa          | Tecnología                         | Versión     |
-|---------------|------------------------------------|-------------|
-| Frontend      | Vue 3 + Vite + Pinia + TailwindCSS| 3.5 / 6.x  |
-| Mapa          | Leaflet.js + OpenStreetMap         | 1.9.4       |
-| Backend       | FastAPI + Pydantic + SQLAlchemy    | 0.115.0     |
-| Base de datos | PostgreSQL (Supabase)              | 15+         |
-| Autenticación | JWT (python-jose) + bcrypt         | HS256       |
-| HTTP Client   | Axios                              | 1.7.7       |
-| Despliegue    | Vercel + Render + Supabase         | —           |
+| Capa          | Tecnología                          | Versión    |
+|---------------|-------------------------------------|------------|
+| Frontend      | Vue 3 + Vite + Pinia + TailwindCSS  | 3.5 / 6.x  |
+| Mapa          | Leaflet.js + OpenStreetMap          | 1.9.4      |
+| Backend       | FastAPI + Pydantic + SQLAlchemy     | 0.115.0    |
+| Base de datos | PostgreSQL (Docker)                 | 16         |
+| Autenticación | JWT (python-jose) + bcrypt          | HS256      |
+| HTTP Client   | Axios                               | 1.7.7      |
+| Contenedores  | Docker + Docker Compose             | 26+        |
 
 ---
 
 ## 6. Endpoints de la API
 
-| Método | Ruta              | Descripción            | Auth |
-|--------|--------------------|------------------------|------|
-| GET    | /                  | Health check           | No   |
-| POST   | /auth/registro     | Crear cuenta           | No   |
-| POST   | /auth/login        | Obtener token JWT      | No   |
-| POST   | /incidentes/       | Crear incidente        | Sí   |
-| GET    | /incidentes/       | Listar incidentes      | No   |
+| Método | Ruta               | Descripción          | Auth |
+|--------|--------------------|----------------------|------|
+| GET    | /                  | Health check         | No   |
+| POST   | /auth/registro     | Crear cuenta         | No   |
+| POST   | /auth/login        | Obtener token JWT    | No   |
+| POST   | /incidentes/       | Crear incidente      | Sí   |
+| GET    | /incidentes/       | Listar incidentes    | No   |
+
+Documentación interactiva: **http://localhost:8000/docs**
 
 **Filtros disponibles en GET /incidentes/:**
 - `?comuna=Santiago`
@@ -203,7 +390,8 @@ vigildata/
 
 | Problema | Solución |
 |----------|----------|
-| `pip install` falla con psycopg | Asegúrate de usar Python 3.12+. El proyecto usa `psycopg[binary]` (psycopg3). |
+| `docker-compose up` falla | Asegúrate de que Docker Desktop esté corriendo. |
+| Puerto 5432 en uso | Detén el PostgreSQL local o cambia el puerto en `docker-compose.yml`. |
 | CORS error en el navegador | Verifica que el backend corra en `localhost:8000` y el frontend en `localhost:5173`. |
-| Error de conexión a BD | Revisa `DATABASE_URL` en `.env` y que tu proyecto Supabase esté activo. |
+| Error de conexión a BD | Espera a que el healthcheck de `db` pase. El backend depende de él. |
 | Leaflet no muestra mapa | Verifica conexión a internet (los tiles se cargan desde OpenStreetMap). |

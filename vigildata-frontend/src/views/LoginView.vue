@@ -8,14 +8,18 @@ const auth = useAuthStore()
 const email = ref('')
 const password = ref('')
 const error = ref('')
+const cargando = ref(false)
 
 async function handleLogin() {
   error.value = ''
+  cargando.value = true
   try {
     await auth.login(email.value, password.value)
-    router.push('/mapa')
+    router.push(auth.esAdmin ? '/admin' : '/mapa')
   } catch (e) {
     error.value = e.response?.data?.detail || 'Error al iniciar sesión'
+  } finally {
+    cargando.value = false
   }
 }
 </script>
@@ -33,8 +37,8 @@ async function handleLogin() {
         <label class="block text-sm font-medium mb-1">Contraseña</label>
         <input v-model="password" type="password" required class="w-full border rounded px-3 py-2" />
       </div>
-      <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">
-        Ingresar
+      <button type="submit" :disabled="cargando" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 disabled:opacity-60">
+        {{ cargando ? 'Ingresando...' : 'Ingresar' }}
       </button>
       <p class="mt-4 text-center text-sm">
         ¿No tienes cuenta?
