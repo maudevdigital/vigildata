@@ -151,4 +151,6 @@ Filtros disponibles en `GET /incidentes/`:
 
 ## 9. Documentación del proyecto
 
-La documentación formal del proyecto se encuentra en `docs/` y sus versiones DOCX en `docs/docx/`.
+La documentación formal del proyecto se encuentra en `docs/`.
+
+El documento DOCX principal del proyecto es `VigilData_Arquitectura_4+1_v2.docx`, que consolida la arquitectura y la planificación trabajada en Taiga.

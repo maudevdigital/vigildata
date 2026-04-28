@@ -10,10 +10,11 @@
 | `04_daily_meeting_2.md` | Registra la Daily Meeting 2 realizada por Discord. |
 | `05_tareas_taiga.md` | Resume las tareas técnicas creadas en Taiga para el Sprint 1. |
 | `06_requisitos_y_criterios.md` | Resume requisitos funcionales, no funcionales y criterios de aceptación. |
+| `../VigilData_Arquitectura_4+1_v2.docx` | Documento DOCX principal del proyecto, actualizado con arquitectura y planificación Scrum/Taiga. |
 
 ## Contexto
 
-Los documentos fueron elaborados a partir de la información trabajada en Taiga para el proyecto VigilData, incluyendo sprints, historias de usuario, criterios de aceptación y tareas técnicas asociadas.
+Los documentos fueron elaborados a partir de la información trabajada en Taiga para el proyecto VigilData, incluyendo sprints, historias de usuario, criterios de aceptación y tareas técnicas asociadas. El único DOCX versionado como entregable principal es `VigilData_Arquitectura_4+1_v2.docx`.
 
 ## Roadmap general
 
