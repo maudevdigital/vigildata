@@ -3,6 +3,7 @@ import { onMounted, ref } from 'vue'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { useIncidentesStore } from '../stores/incidentesStore'
+import { parseFechaIncidenteGmt4 } from '../utils/fechaIncidente'
 
 const incidentesStore = useIncidentesStore()
 const mapContainer = ref(null)
@@ -19,7 +20,11 @@ onMounted(async () => {
   incidentesStore.incidentes.forEach((inc) => {
     L.marker([inc.latitud, inc.longitud])
       .addTo(map)
-      .bindPopup(`<strong>${inc.tipo}</strong><br>${inc.descripcion}<br><small>${new Date(inc.fecha).toLocaleString()}</small>`)
+      .bindPopup(
+          `<strong>${inc.tipo}</strong><br>${inc.descripcion}` +
+            (inc.comuna ? `<br><em>${inc.comuna}</em>` : '') +
+            `<br><small>${parseFechaIncidenteGmt4(inc.fecha).toLocaleString('es-CL')}</small>`,
+        )
   })
 })
 </script>

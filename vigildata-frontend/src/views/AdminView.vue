@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import api from '../services/api'
+import { parseFechaIncidenteGmt4 } from '../utils/fechaIncidente'
 
 const incidentes = ref([])
 const error = ref('')
@@ -48,7 +49,7 @@ onMounted(async () => {
             <td class="px-4 py-3 font-medium">{{ inc.tipo }}</td>
             <td class="px-4 py-3">{{ inc.comuna || '—' }}</td>
             <td class="px-4 py-3 text-gray-600 max-w-xs truncate">{{ inc.descripcion }}</td>
-            <td class="px-4 py-3 text-gray-500">{{ new Date(inc.fecha).toLocaleString('es-CL') }}</td>
+            <td class="px-4 py-3 text-gray-500">{{ parseFechaIncidenteGmt4(inc.fecha).toLocaleString('es-CL') }}</td>
           </tr>
         </tbody>
       </table>
