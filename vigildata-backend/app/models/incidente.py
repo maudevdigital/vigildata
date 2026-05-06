@@ -10,9 +10,10 @@ class Incidente(Base):
     id = Column(Integer, primary_key=True, index=True)
     tipo = Column(String, nullable=False)
     descripcion = Column(String, nullable=False)
-    fecha = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
+    fecha = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
     latitud = Column(Float, nullable=False)
     longitud = Column(Float, nullable=False)
+    region = Column(String, nullable=True)
     comuna = Column(String, nullable=True)
     usuario_id = Column(Integer, ForeignKey("usuarios.id"), nullable=False)
 

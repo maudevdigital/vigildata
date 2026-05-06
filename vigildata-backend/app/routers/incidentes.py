@@ -1,5 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from datetime import datetime
 from typing import Optional
 
@@ -27,16 +28,41 @@ def crear_incidente(
 
 @router.get("/", response_model=list[IncidenteResponse])
 def listar_incidentes(
+    region: Optional[str] = Query(None),
     comuna: Optional[str] = Query(None),
     fecha_inicio: Optional[datetime] = Query(None),
     fecha_fin: Optional[datetime] = Query(None),
     db: Session = Depends(get_db),
 ):
     query = db.query(Incidente)
+    if region:
+        region_normalizada = region.strip()
+        if region_normalizada:
+            query = query.filter(func.lower(Incidente.region) == region_normalizada.lower())
     if comuna:
-        query = query.filter(Incidente.comuna == comuna)
+        comuna_normalizada = comuna.strip()
+        if comuna_normalizada:
+            query = query.filter(func.lower(Incidente.comuna) == comuna_normalizada.lower())
     if fecha_inicio:
         query = query.filter(Incidente.fecha >= fecha_inicio)
     if fecha_fin:
         query = query.filter(Incidente.fecha <= fecha_fin)
     return query.order_by(Incidente.fecha.desc()).all()
+
+
+@router.delete("/{incidente_id}", status_code=status.HTTP_204_NO_CONTENT)
+def eliminar_incidente(
+    incidente_id: int,
+    db: Session = Depends(get_db),
+    usuario: Usuario = Depends(obtener_usuario_actual),
+):
+    if usuario.rol.value != "ANALISTA":
+        raise HTTPException(status_code=403, detail="No tienes permisos para realizar esta acción")
+        
+    incidente = db.query(Incidente).filter(Incidente.id == incidente_id).first()
+    if not incidente:
+        raise HTTPException(status_code=404, detail="Incidente no encontrado")
+        
+    db.delete(incidente)
+    db.commit()
+    return None

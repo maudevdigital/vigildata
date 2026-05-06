@@ -17,7 +17,7 @@ async function handleRegistro() {
   try {
     await auth.registro(email.value, password.value)
     exito.value = true
-    setTimeout(() => router.push('/login'), 1500)
+    setTimeout(() => router.push('/mapa'), 1500)
   } catch (e) {
     error.value = e.response?.data?.detail || 'Error al registrarse'
   } finally {

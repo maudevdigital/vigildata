@@ -1,17 +1,33 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import api from '../services/api'
+import { useAuthStore } from '../stores/authStore'
 
 const incidentes = ref([])
 const error = ref('')
+const auth = useAuthStore()
 
-onMounted(async () => {
+async function cargarIncidentes() {
   try {
     const res = await api.get('/incidentes/')
     incidentes.value = res.data
   } catch (e) {
     error.value = 'No se pudieron cargar los incidentes'
   }
+}
+
+async function eliminarIncidente(id) {
+  if (!confirm('¿Estás seguro de que quieres eliminar este reporte?')) return
+  try {
+    await api.delete(`/incidentes/${id}`)
+    incidentes.value = incidentes.value.filter(inc => inc.id !== id)
+  } catch (e) {
+    alert(e.response?.data?.detail || 'No se pudo eliminar el incidente')
+  }
+}
+
+onMounted(() => {
+  cargarIncidentes()
 })
 </script>
 
@@ -40,6 +56,7 @@ onMounted(async () => {
             <th class="px-4 py-3 text-left">Comuna</th>
             <th class="px-4 py-3 text-left">Descripción</th>
             <th class="px-4 py-3 text-left">Fecha</th>
+            <th v-if="auth.esAdmin" class="px-4 py-3 text-right">Acciones</th>
           </tr>
         </thead>
         <tbody class="divide-y">
@@ -49,6 +66,14 @@ onMounted(async () => {
             <td class="px-4 py-3">{{ inc.comuna || '—' }}</td>
             <td class="px-4 py-3 text-gray-600 max-w-xs truncate">{{ inc.descripcion }}</td>
             <td class="px-4 py-3 text-gray-500">{{ new Date(inc.fecha).toLocaleString('es-CL') }}</td>
+            <td v-if="auth.esAdmin" class="px-4 py-3 text-right">
+              <button 
+                @click="eliminarIncidente(inc.id)" 
+                class="text-red-500 hover:text-red-700 text-sm font-medium"
+              >
+                Borrar
+              </button>
+            </td>
           </tr>
         </tbody>
       </table>

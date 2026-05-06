@@ -8,6 +8,7 @@ class IncidenteCreate(BaseModel):
     descripcion: str
     latitud: float
     longitud: float
+    region: Optional[str] = None
     comuna: Optional[str] = None
 
 
@@ -18,6 +19,7 @@ class IncidenteResponse(BaseModel):
     fecha: datetime
     latitud: float
     longitud: float
+    region: Optional[str] = None
     comuna: Optional[str] = None
     usuario_id: int
 
@@ -25,6 +27,7 @@ class IncidenteResponse(BaseModel):
 
 
 class IncidenteFiltro(BaseModel):
+    region: Optional[str] = None
     comuna: Optional[str] = None
     fecha_inicio: Optional[datetime] = None
     fecha_fin: Optional[datetime] = None

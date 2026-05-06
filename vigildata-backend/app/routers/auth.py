@@ -38,7 +38,7 @@ def obtener_usuario_actual(
     return usuario
 
 
-@router.post("/registro", response_model=UsuarioResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/registro", response_model=Token, status_code=status.HTTP_201_CREATED)
 def registro(usuario: UsuarioCreate, db: Session = Depends(get_db)):
     existe = db.query(Usuario).filter(Usuario.email == usuario.email).first()
     if existe:
@@ -51,7 +51,15 @@ def registro(usuario: UsuarioCreate, db: Session = Depends(get_db)):
     db.add(nuevo)
     db.commit()
     db.refresh(nuevo)
-    return nuevo
+    token = crear_token({
+        "sub": str(nuevo.id),
+        "email": nuevo.email,
+        "rol": nuevo.rol.value,
+    })
+    return Token(
+        access_token=token,
+        usuario=UsuarioResponse.model_validate(nuevo),
+    )
 
 
 @router.post("/login", response_model=Token)
