@@ -72,7 +72,7 @@ Bloqueos:
 
 - Requiere coordinación con frontend para acordar estructura de datos y campos obligatorios.
 
-### Felipe Vergara R - Validación funcional
+### Felipe Vergara R - Scrum Master / Validación funcional
 
 Ayer:
 
@@ -123,3 +123,7 @@ Bloqueos:
 3. Implementar visualización básica de incidentes en mapa.
 4. Validar cumplimiento de criterios de aceptación.
 5. Preparar cierre del Sprint 1 para el 28/04/2026.
+
+## Pruebas unitarias
+
+Ademas de caja negra y aceptacion, el equipo considera pruebas unitarias. Estas pruebas son ejecutadas por los developers para validar unidades pequenas antes de la demostracion, por ejemplo generacion de JWT, validacion de credenciales, validaciones de formularios y logica de filtros.

@@ -30,6 +30,16 @@
 - El tablero de Taiga debe reflejar el estado real del avance.
 - El flujo mínimo de producto debe permitir registrar, reportar, visualizar y filtrar incidentes.
 
+## Tecnicas de prueba acordadas
+
+Para validar las historias de Sprint 1 y Sprint 2 se consideran tres tecnicas:
+
+1. Pruebas de caja negra: validan entradas, salidas y comportamiento visible del sistema.
+2. Pruebas de aceptacion: verifican si cada historia cumple los criterios definidos por el Product Owner.
+3. Pruebas unitarias: validan unidades pequenas del backend o frontend, como generacion de JWT, validaciones de formularios y logica de filtros.
+
+La ejecucion de las pruebas corresponde al Scrum Team/developers. El Product Owner revisa evidencia funcional y acepta las historias contra criterios de aceptacion.
+
 ## Trazabilidad por sprint
 
 | Sprint | Historias | Requisitos principales |
