@@ -1,5 +1,6 @@
 <script setup>
 import { onMounted, ref, computed } from 'vue'
+import { useRoute } from 'vue-router'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { useIncidentesStore } from '../stores/incidentesStore'
@@ -7,6 +8,7 @@ import { regionesData } from '../utils/regiones'
 import IncidenteResumen from '../components/IncidenteResumen.vue'
 import api from '../services/api'
 
+const route = useRoute()
 const incidentesStore = useIncidentesStore()
 const mapContainer = ref(null)
 const region = ref('')
@@ -155,6 +157,13 @@ onMounted(async () => {
   markersLayer = L.layerGroup().addTo(map)
 
   await cargarIncidentes()
+
+  const lat = Number.parseFloat(route.query.lat)
+  const lon = Number.parseFloat(route.query.lon)
+  if (Number.isFinite(lat) && Number.isFinite(lon)) {
+    const zoom = Number.parseInt(route.query.zoom, 10) || 16
+    map.flyTo([lat, lon], zoom, { duration: 1.2 })
+  }
 })
 </script>
 

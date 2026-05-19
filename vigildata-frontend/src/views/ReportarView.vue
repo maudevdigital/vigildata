@@ -91,7 +91,7 @@ async function handleReportar() {
     })
 
     exito.value = true
-    setTimeout(() => router.push('/mapa'), 1500)
+    setTimeout(() => router.push({ path: '/mapa', query: { lat, lon, zoom: 16 } }), 1500)
   } catch (e) {
     error.value = e.response?.data?.detail || e.message || 'Error al reportar'
   }
