@@ -15,6 +15,15 @@ class Incidente(Base):
     longitud = Column(Float, nullable=False)
     region = Column(String, nullable=True)
     comuna = Column(String, nullable=True)
+    nivel_riesgo = Column(String, nullable=True)
     usuario_id = Column(Integer, ForeignKey("usuarios.id"), nullable=False)
+    estado = Column(String, default="pendiente", nullable=False)
+    revisado_por_id = Column(Integer, ForeignKey("usuarios.id"), nullable=True)
+    fecha_revision = Column(DateTime(timezone=True), nullable=True)
 
-    usuario = relationship("Usuario", back_populates="incidentes")
+    usuario = relationship("Usuario", foreign_keys=[usuario_id], back_populates="incidentes")
+    revisador = relationship("Usuario", foreign_keys=[revisado_por_id])
+
+    @property
+    def revisado_por_email(self):
+        return self.revisador.email if self.revisador else None

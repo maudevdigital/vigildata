@@ -13,16 +13,23 @@ const latitud = ref('')
 const longitud = ref('')
 const region = ref('')
 const comuna = ref('')
+const nivel_riesgo = ref('')
+const fecha = ref('')
 const error = ref('')
 const exito = ref(false)
 const ubicacionCargando = ref(false)
 
 const tipos = ['Robo', 'Asalto', 'Vandalismo', 'Iluminación deficiente', 'Accidente', 'Otro']
+const niveles_riesgo = ['Bajo', 'Medio', 'Alto']
+
+const regionesOrdenadas = computed(() => {
+  return [...regionesData].sort((a, b) => a.nombre.localeCompare(b.nombre))
+})
 
 const comunasDisponibles = computed(() => {
   if (!region.value) return []
   const reg = regionesData.find((r) => r.nombre === region.value)
-  return reg ? reg.comunas : []
+  return reg ? [...reg.comunas].sort((a, b) => a.localeCompare(b)) : []
 })
 
 function onRegionChange() {
@@ -81,6 +88,8 @@ async function handleReportar() {
       longitud: lon,
       region: region.value || null,
       comuna: comuna.value || null,
+      nivel_riesgo: nivel_riesgo.value,
+      fecha: fecha.value ? new Date(fecha.value).toISOString() : undefined,
     })
 
     exito.value = true
@@ -106,6 +115,17 @@ async function handleReportar() {
           <option v-for="t in tipos" :key="t" :value="t">{{ t }}</option>
         </select>
       </div>
+      <div class="mb-4">
+        <label class="block text-sm font-medium mb-1">Nivel de riesgo</label>
+        <select v-model="nivel_riesgo" required class="w-full border rounded px-3 py-2">
+          <option value="" disabled>Selecciona el nivel</option>
+          <option v-for="nr in niveles_riesgo" :key="nr" :value="nr">{{ nr }}</option>
+        </select>
+      </div>
+      <div class="mb-4">
+        <label class="block text-sm font-medium mb-1">Fecha y hora (opcional)</label>
+        <input v-model="fecha" type="datetime-local" class="w-full border rounded px-3 py-2">
+      </div>
       <div class="mb-6">
         <label class="block text-sm font-medium mb-1">Descripción</label>
         <textarea v-model="descripcion" required rows="3" class="w-full border rounded px-3 py-2"></textarea>
@@ -114,7 +134,7 @@ async function handleReportar() {
         <label class="block text-sm font-medium mb-1">Región</label>
         <select v-model="region" @change="onRegionChange" class="w-full border rounded px-3 py-2">
           <option value="" disabled>Selecciona una región</option>
-          <option v-for="r in regionesData" :key="r.nombre" :value="r.nombre">{{ r.nombre }}</option>
+          <option v-for="r in regionesOrdenadas" :key="r.nombre" :value="r.nombre">{{ r.nombre }}</option>
         </select>
       </div>
       <div class="mb-4">

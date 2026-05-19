@@ -16,5 +16,19 @@ export const useIncidentesStore = defineStore('incidentes', () => {
     return res.data
   }
 
-  return { incidentes, cargar, crear }
+  async function cambiarEstado(id, estado) {
+    const res = await api.patch(`/incidentes/${id}/estado`, { estado })
+    const idx = incidentes.value.findIndex(i => i.id === id)
+    if (idx !== -1) {
+      incidentes.value[idx] = res.data
+    }
+    return res.data
+  }
+
+  async function eliminar(id) {
+    await api.delete(`/incidentes/${id}`)
+    incidentes.value = incidentes.value.filter(i => i.id !== id)
+  }
+
+  return { incidentes, cargar, crear, cambiarEstado, eliminar }
 })

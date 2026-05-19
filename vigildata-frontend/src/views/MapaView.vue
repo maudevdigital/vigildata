@@ -9,6 +9,7 @@ const incidentesStore = useIncidentesStore()
 const mapContainer = ref(null)
 const region = ref('')
 const comuna = ref('')
+const nivelRiesgo = ref('')
 const fechaInicio = ref('')
 const fechaFin = ref('')
 const cargando = ref(false)
@@ -16,10 +17,14 @@ const error = ref('')
 let map = null
 let markersLayer = null
 
+const regionesOrdenadas = computed(() => {
+  return [...regionesData].sort((a, b) => a.nombre.localeCompare(b.nombre))
+})
+
 const comunasDisponibles = computed(() => {
   if (!region.value) return []
   const reg = regionesData.find((r) => r.nombre === region.value)
-  return reg ? reg.comunas : []
+  return reg ? [...reg.comunas].sort((a, b) => a.localeCompare(b)) : []
 })
 
 function onRegionChange() {
@@ -36,17 +41,47 @@ function normalizarFechaFin(valor) {
   return `${valor}T23:59:59`
 }
 
+function obtenerIconoRiesgo(nivel) {
+  let color = '#22c55e' // Default / Bajo (verde)
+  if (nivel === 'Medio') color = '#eab308' // amarillo
+  else if (nivel === 'Alto') color = '#ef4444' // rojo
+  
+  const svgIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="${color}" width="32" height="32" stroke="white" stroke-width="1.5" style="filter: drop-shadow(0px 2px 2px rgba(0,0,0,0.5));">
+    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+  </svg>`;
+
+  return L.divIcon({
+    className: 'custom-div-icon',
+    html: svgIcon,
+    iconSize: [32, 32],
+    iconAnchor: [16, 32],
+    popupAnchor: [0, -32]
+  })
+}
+
 function actualizarMarcadores(incidentes) {
   if (!markersLayer) return
   markersLayer.clearLayers()
   incidentes.forEach((inc) => {
+    // Los rechazados no se muestran, aunque ya debería filtrarlos el backend
+    if (inc.estado === 'rechazado') return
+
     const regionTexto = inc.region || 'Sin región'
     const comunaTexto = inc.comuna || 'Sin comuna'
     const fechaTexto = inc.fecha ? new Date(inc.fecha).toLocaleString() : 'Sin fecha'
-    L.marker([inc.latitud, inc.longitud])
+    const riesgoTexto = inc.nivel_riesgo ? `Riesgo: ${inc.nivel_riesgo}` : 'Riesgo: No especificado'
+    
+    let estadoTexto = ''
+    if (!inc.estado || inc.estado === 'pendiente') {
+      estadoTexto = '<span style="color: #d97706; font-weight: bold;">(Pendiente de revisión)</span>'
+    } else if (inc.estado === 'aprobado') {
+      estadoTexto = '<span style="color: #16a34a; font-weight: bold;">(Aprobado)</span>'
+    }
+
+    L.marker([inc.latitud, inc.longitud], { icon: obtenerIconoRiesgo(inc.nivel_riesgo) })
       .addTo(markersLayer)
       .bindPopup(
-        `<strong>${inc.tipo}</strong><br>${inc.descripcion}<br><small>${fechaTexto}</small><br><small>${regionTexto} - ${comunaTexto}</small>`
+        `<strong>${inc.tipo}</strong> ${estadoTexto}<br>${riesgoTexto}<br>${inc.descripcion}<br><small>${fechaTexto}</small><br><small>${regionTexto} - ${comunaTexto}</small>`
       )
   })
 }
@@ -72,6 +107,9 @@ function construirFiltros() {
   if (comuna.value) {
     params.comuna = comuna.value
   }
+  if (nivelRiesgo.value) {
+    params.nivel_riesgo = nivelRiesgo.value
+  }
   const inicio = normalizarFechaInicio(fechaInicio.value)
   const fin = normalizarFechaFin(fechaFin.value)
   if (inicio) params.fecha_inicio = inicio
@@ -86,6 +124,7 @@ async function aplicarFiltros() {
 async function limpiarFiltros() {
   region.value = ''
   comuna.value = ''
+  nivelRiesgo.value = ''
   fechaInicio.value = ''
   fechaFin.value = ''
   await cargarIncidentes()
@@ -117,7 +156,7 @@ onMounted(async () => {
           <label class="block text-xs font-medium mb-1">Región</label>
           <select v-model="region" @change="onRegionChange" class="w-full border rounded px-3 py-2 text-sm">
             <option value="">Todas las regiones</option>
-            <option v-for="r in regionesData" :key="r.nombre" :value="r.nombre">{{ r.nombre }}</option>
+            <option v-for="r in regionesOrdenadas" :key="r.nombre" :value="r.nombre">{{ r.nombre }}</option>
           </select>
         </div>
         <div>
@@ -125,6 +164,15 @@ onMounted(async () => {
           <select v-model="comuna" :disabled="!region" class="w-full border rounded px-3 py-2 text-sm disabled:bg-gray-100">
             <option value="">Todas las comunas</option>
             <option v-for="c in comunasDisponibles" :key="c" :value="c">{{ c }}</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-medium mb-1">Nivel de riesgo</label>
+          <select v-model="nivelRiesgo" class="w-full border rounded px-3 py-2 text-sm">
+            <option value="">Todos los niveles</option>
+            <option value="Bajo">Bajo</option>
+            <option value="Medio">Medio</option>
+            <option value="Alto">Alto</option>
           </select>
         </div>
         <div class="grid grid-cols-2 gap-3">

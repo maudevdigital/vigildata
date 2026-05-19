@@ -1,26 +1,37 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import api from '../services/api'
 import { useAuthStore } from '../stores/authStore'
+import { useIncidentesStore } from '../stores/incidentesStore'
 
-const incidentes = ref([])
+const incidentesStore = useIncidentesStore()
 const error = ref('')
 const auth = useAuthStore()
 
+const pendientes = computed(() => incidentesStore.incidentes.filter(i => !i.estado || i.estado === 'pendiente'))
+const aprobados = computed(() => incidentesStore.incidentes.filter(i => i.estado === 'aprobado'))
+const rechazados = computed(() => incidentesStore.incidentes.filter(i => i.estado === 'rechazado'))
+
 async function cargarIncidentes() {
   try {
-    const res = await api.get('/incidentes/')
-    incidentes.value = res.data
+    await incidentesStore.cargar({ estado: 'todos' })
   } catch (e) {
     error.value = 'No se pudieron cargar los incidentes'
+  }
+}
+
+async function cambiarEstado(id, nuevoEstado) {
+  try {
+    await incidentesStore.cambiarEstado(id, nuevoEstado)
+  } catch (e) {
+    alert(e.response?.data?.detail || 'No se pudo cambiar el estado')
   }
 }
 
 async function eliminarIncidente(id) {
   if (!confirm('¿Estás seguro de que quieres eliminar este reporte?')) return
   try {
-    await api.delete(`/incidentes/${id}`)
-    incidentes.value = incidentes.value.filter(inc => inc.id !== id)
+    await incidentesStore.eliminar(id)
   } catch (e) {
     alert(e.response?.data?.detail || 'No se pudo eliminar el incidente')
   }
@@ -32,51 +43,117 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="max-w-5xl mx-auto px-4 py-8">
+  <div class="max-w-7xl mx-auto px-4 py-8">
     <h1 class="text-3xl font-bold mb-2">Panel de Administración</h1>
-    <p class="text-gray-500 mb-6">Vista exclusiva para analistas — Sprint 1</p>
+    <p class="text-gray-500 mb-6">Revisión de incidentes reportados</p>
 
     <div v-if="error" class="bg-red-100 text-red-700 p-3 rounded mb-4">{{ error }}</div>
 
-    <div class="bg-white rounded-lg shadow overflow-hidden">
-      <div class="px-6 py-4 border-b flex items-center justify-between">
-        <h2 class="font-semibold text-lg">Incidentes reportados</h2>
-        <span class="text-sm text-gray-500">{{ incidentes.length }} total</span>
+    <!-- Pendientes -->
+    <div class="bg-white rounded-lg shadow overflow-hidden mb-8 border border-yellow-200">
+      <div class="px-6 py-4 border-b bg-yellow-50 flex items-center justify-between">
+        <h2 class="font-semibold text-lg text-yellow-800">Incidentes reportados (pendientes)</h2>
+        <span class="text-sm text-yellow-700">{{ pendientes.length }} total</span>
       </div>
-
-      <div v-if="incidentes.length === 0" class="p-6 text-center text-gray-400">
-        No hay incidentes registrados aún.
+      <div v-if="pendientes.length === 0" class="p-6 text-center text-gray-400">
+        No hay incidentes pendientes de revisión.
       </div>
-
       <table v-else class="w-full text-sm">
         <thead class="bg-gray-50 text-gray-600 uppercase text-xs">
           <tr>
             <th class="px-4 py-3 text-left">#</th>
             <th class="px-4 py-3 text-left">Tipo</th>
+            <th class="px-4 py-3 text-left">Riesgo</th>
             <th class="px-4 py-3 text-left">Comuna</th>
-            <th class="px-4 py-3 text-left">Descripción</th>
             <th class="px-4 py-3 text-left">Fecha</th>
             <th v-if="auth.esAdmin" class="px-4 py-3 text-right">Acciones</th>
           </tr>
         </thead>
         <tbody class="divide-y">
-          <tr v-for="inc in incidentes" :key="inc.id" class="hover:bg-gray-50">
+          <tr v-for="inc in pendientes" :key="inc.id" class="hover:bg-gray-50">
             <td class="px-4 py-3 text-gray-400">{{ inc.id }}</td>
             <td class="px-4 py-3 font-medium">{{ inc.tipo }}</td>
-            <td class="px-4 py-3">{{ inc.comuna || '—' }}</td>
-            <td class="px-4 py-3 text-gray-600 max-w-xs truncate">{{ inc.descripcion }}</td>
+            <td class="px-4 py-3">{{ inc.nivel_riesgo || '—' }}</td>
+            <td class="px-4 py-3 text-gray-600 max-w-xs truncate">{{ inc.comuna || '—' }}</td>
             <td class="px-4 py-3 text-gray-500">{{ new Date(inc.fecha).toLocaleString('es-CL') }}</td>
-            <td v-if="auth.esAdmin" class="px-4 py-3 text-right">
-              <button 
-                @click="eliminarIncidente(inc.id)" 
-                class="text-red-500 hover:text-red-700 text-sm font-medium"
-              >
-                Borrar
-              </button>
+            <td v-if="auth.esAdmin" class="px-4 py-3 text-right space-x-2">
+              <button @click="cambiarEstado(inc.id, 'aprobado')" class="text-green-600 hover:text-green-800 text-sm font-medium">Aprobar</button>
+              <button @click="cambiarEstado(inc.id, 'rechazado')" class="text-orange-500 hover:text-orange-700 text-sm font-medium">Rechazar</button>
+              <button @click="eliminarIncidente(inc.id)" class="text-red-500 hover:text-red-700 text-sm font-medium">Borrar</button>
             </td>
           </tr>
         </tbody>
       </table>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <!-- Aprobados -->
+      <div class="bg-white rounded-lg shadow overflow-hidden border border-green-200">
+        <div class="px-6 py-4 border-b bg-green-50 flex items-center justify-between">
+          <h2 class="font-semibold text-lg text-green-800">Incidentes aceptados</h2>
+          <span class="text-sm text-green-700">{{ aprobados.length }} total</span>
+        </div>
+        <div v-if="aprobados.length === 0" class="p-6 text-center text-gray-400">
+          No hay incidentes aprobados.
+        </div>
+        <div v-else class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead class="bg-gray-50 text-gray-600 uppercase text-xs">
+              <tr>
+                <th class="px-4 py-3 text-left">Aceptado por</th>
+                <th class="px-4 py-3 text-left">Tipo</th>
+                <th class="px-4 py-3 text-left">Comuna</th>
+                <th v-if="auth.esAdmin" class="px-4 py-3 text-right">Acciones</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y">
+              <tr v-for="inc in aprobados" :key="inc.id" class="hover:bg-gray-50">
+                <td class="px-4 py-3 text-gray-500 text-xs">{{ inc.revisado_por_email || '—' }}</td>
+                <td class="px-4 py-3 font-medium">{{ inc.tipo }}</td>
+                <td class="px-4 py-3 text-gray-600">{{ inc.comuna || '—' }}</td>
+                <td v-if="auth.esAdmin" class="px-4 py-3 text-right space-x-2">
+                  <button @click="cambiarEstado(inc.id, 'rechazado')" class="text-orange-500 hover:text-orange-700 text-sm font-medium">Rechazar</button>
+                  <button @click="eliminarIncidente(inc.id)" class="text-red-500 hover:text-red-700 text-sm font-medium">Borrar</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Rechazados -->
+      <div class="bg-white rounded-lg shadow overflow-hidden border border-gray-300">
+        <div class="px-6 py-4 border-b bg-gray-100 flex items-center justify-between">
+          <h2 class="font-semibold text-lg text-gray-700">Incidentes rechazados</h2>
+          <span class="text-sm text-gray-600">{{ rechazados.length }} total</span>
+        </div>
+        <div v-if="rechazados.length === 0" class="p-6 text-center text-gray-400">
+          No hay incidentes rechazados.
+        </div>
+        <div v-else class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead class="bg-gray-50 text-gray-600 uppercase text-xs">
+              <tr>
+                <th class="px-4 py-3 text-left">Rechazado por</th>
+                <th class="px-4 py-3 text-left">Tipo</th>
+                <th class="px-4 py-3 text-left">Comuna</th>
+                <th v-if="auth.esAdmin" class="px-4 py-3 text-right">Acciones</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y">
+              <tr v-for="inc in rechazados" :key="inc.id" class="hover:bg-gray-50">
+                <td class="px-4 py-3 text-gray-500 text-xs">{{ inc.revisado_por_email || '—' }}</td>
+                <td class="px-4 py-3 font-medium">{{ inc.tipo }}</td>
+                <td class="px-4 py-3 text-gray-600">{{ inc.comuna || '—' }}</td>
+                <td v-if="auth.esAdmin" class="px-4 py-3 text-right space-x-2">
+                  <button @click="cambiarEstado(inc.id, 'aprobado')" class="text-green-600 hover:text-green-800 text-sm font-medium">Aprobar</button>
+                  <button @click="eliminarIncidente(inc.id)" class="text-red-500 hover:text-red-700 text-sm font-medium">Borrar</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   </div>
 </template>

@@ -10,6 +10,8 @@ class IncidenteCreate(BaseModel):
     longitud: float
     region: Optional[str] = None
     comuna: Optional[str] = None
+    nivel_riesgo: str
+    fecha: Optional[datetime] = None
 
 
 class IncidenteResponse(BaseModel):
@@ -21,9 +23,16 @@ class IncidenteResponse(BaseModel):
     longitud: float
     region: Optional[str] = None
     comuna: Optional[str] = None
+    nivel_riesgo: Optional[str] = None
     usuario_id: int
+    estado: str
+    revisado_por_email: Optional[str] = None
+    fecha_revision: Optional[datetime] = None
 
     model_config = {"from_attributes": True}
+
+class IncidenteEstadoUpdate(BaseModel):
+    estado: str
 
 
 class IncidenteFiltro(BaseModel):
