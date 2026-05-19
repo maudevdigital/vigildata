@@ -15,6 +15,7 @@
 | `09_daily_meeting_3_video_pruebas.md` | Daily Meeting 3 registrada en Taiga para cierre de Sprint 2 y pruebas acordadas. |
 | `10_testing_unitario_cobertura.md` | Evidencia del taller de testing unitario, mocking y cobertura de codigo. |
 | `11_cierre_sprint_3.md` | Cierre del Sprint 3 con evidencia de commits y validacion end-to-end. |
+| `12_daily_meeting_4_cierre_sprint_3.md` | Daily Meeting 4 registrada en Taiga para cierre de Sprint 3 y preparacion del video Hito 2. |
 | `../VigilData_Arquitectura_4+1_v2.docx` | Documento DOCX principal del proyecto. |
 
 ## Contexto
