@@ -1,3 +1,14 @@
+## 0. Configurar la base de datos (primera vez)
+
+Copiar `vigildata-backend/.env.example` a `vigildata-backend/.env` y elegir UNA opción:
+
+- **Opción A (Supabase):** descomentar la línea `DATABASE_URL=postgresql://...` y poner las credenciales reales del proyecto Supabase.
+- **Opción B (SQLite local):** dejar `DATABASE_URL=sqlite:///./local-demo.db`. No requiere red ni credenciales; se usa para la demo si Supabase no está disponible.
+
+El admin seed (`admin@vigildata.cl` / `admin123`) se crea automáticamente en cualquiera de las dos.
+
+---
+
 1. Encender el Backend (La API)
 Abre tu carpeta vigildata en Visual Studio Code.
 
