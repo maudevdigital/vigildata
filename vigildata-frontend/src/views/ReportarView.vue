@@ -69,9 +69,7 @@ async function handleReportar() {
   exito.value = false
   try {
     if (!latitud.value || !longitud.value) {
-      const pos = await solicitarUbicacion()
-      latitud.value = pos.coords.latitude.toFixed(6)
-      longitud.value = pos.coords.longitude.toFixed(6)
+      throw new Error('Falta la ubicación: presioná "Obtener ubicación automáticamente" o ingresá latitud y longitud manualmente.')
     }
 
     const lat = Number.parseFloat(latitud.value)
@@ -150,6 +148,7 @@ async function handleReportar() {
           v-model="latitud"
           type="number"
           step="0.000001"
+          required
           class="w-full border rounded px-3 py-2"
           placeholder="Ej: -33.45"
         />
@@ -160,6 +159,7 @@ async function handleReportar() {
           v-model="longitud"
           type="number"
           step="0.000001"
+          required
           class="w-full border rounded px-3 py-2"
           placeholder="Ej: -70.65"
         />
