@@ -168,6 +168,7 @@ vigildata/
 
 ---
 
+<<<<<<< Updated upstream
 ## 8. Endpoints de la API
 
 | Método | Ruta              | Descripción           | Auth     |
@@ -180,6 +181,36 @@ vigildata/
 | GET    | /incidentes/      | Listar incidentes     | No       |
 
 Documentación interactiva: **http://localhost:8000/docs**
+=======
+| Método | Ruta | Descripción | Auth |
+|--------|------|-------------|------|
+| GET | `/` | Health check | No |
+| POST | `/auth/registro` | Crear cuenta | No |
+| POST | `/auth/login` | Obtener token JWT | No |
+| GET | `/auth/me` | Obtener usuario autenticado | Sí |
+| POST | `/incidentes/` | Crear incidente (estado inicial: pendiente) | Sí |
+| GET | `/incidentes/` | Listar incidentes (mapa: solo aprobados por defecto) | No |
+| GET | `/incidentes/resumen` | Resumen por comuna y tipo | No |
+| PATCH | `/incidentes/{id}/estado` | Moderar incidente (ANALISTA) | Sí |
+| DELETE | `/incidentes/{id}` | Eliminar incidente (ANALISTA) | Sí |
+
+Filtros disponibles en `GET /incidentes/` y `GET /incidentes/resumen`:
+
+- `comuna`
+- `region`
+- `nivel_riesgo`
+- `fecha_inicio`
+- `fecha_fin`
+- `estado` (`pendiente`, `aprobado`, `rechazado`, `todos`; por defecto solo `aprobado`)
+
+## Moderación de incidentes (HU-07)
+
+1. Un ciudadano reporta un incidente → queda en estado **pendiente**.
+2. Un analista (`admin@vigildata.cl`) entra al **Panel Admin** (`/admin`).
+3. Aprueba o rechaza cada reporte; el sistema guarda **quién** revisó y **cuándo**.
+4. Solo los incidentes **aprobados** aparecen en el mapa y en el resumen público.
+5. Los **rechazados** y **pendientes** no se muestran como reportes activos en el mapa.
+>>>>>>> Stashed changes
 
 **Filtros disponibles en GET /incidentes/:**
 - `?comuna=Santiago`

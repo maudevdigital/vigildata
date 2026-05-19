@@ -1,6 +1,8 @@
 from pydantic import BaseModel, Field
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Literal
+
+EstadoIncidente = Literal["pendiente", "aprobado", "rechazado"]
 
 
 class IncidenteCreate(BaseModel):
@@ -27,8 +29,25 @@ class IncidenteResponse(BaseModel):
 
     model_config = {"from_attributes": True}
 
+<<<<<<< Updated upstream
+=======
+class IncidenteEstadoUpdate(BaseModel):
+    estado: EstadoIncidente = Field(..., description="pendiente | aprobado | rechazado")
+
+>>>>>>> Stashed changes
 
 class IncidenteFiltro(BaseModel):
     comuna: Optional[str] = None
     fecha_inicio: Optional[datetime] = None
     fecha_fin: Optional[datetime] = None
+
+
+class ConteoItem(BaseModel):
+    etiqueta: str
+    total: int
+
+
+class IncidenteResumenResponse(BaseModel):
+    total: int
+    por_comuna: list[ConteoItem]
+    por_tipo: list[ConteoItem]

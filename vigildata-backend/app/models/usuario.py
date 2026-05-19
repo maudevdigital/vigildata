@@ -17,4 +17,8 @@ class Usuario(Base):
     password = Column(String, nullable=False)
     rol = Column(SAEnum(Rol), default=Rol.CIUDADANO, nullable=False)
 
-    incidentes = relationship("Incidente", back_populates="usuario")
+    incidentes = relationship(
+        "Incidente",
+        foreign_keys="Incidente.usuario_id",
+        back_populates="usuario",
+    )

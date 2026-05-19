@@ -42,11 +42,17 @@ const router = createRouter({
   routes,
 })
 
-router.beforeEach((to) => {
+router.beforeEach(async (to) => {
   const auth = useAuthStore()
 
-  if (to.meta.requiereAuth && !auth.estaAutenticado) {
-    return { name: 'login' }
+  if (to.meta.requiereAuth) {
+    if (!auth.estaAutenticado) {
+      return { name: 'login' }
+    }
+    const sesionValida = await auth.verificarSesion()
+    if (!sesionValida) {
+      return { name: 'login', query: { sesion: 'expirada' } }
+    }
   }
 
   if (to.meta.soloAdmin && !auth.esAdmin) {

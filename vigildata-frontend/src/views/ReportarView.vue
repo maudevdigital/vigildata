@@ -142,6 +142,7 @@ async function handleReportar() {
     exito.value = true
     setTimeout(() => router.push('/mapa'), 1500)
   } catch (e) {
+<<<<<<< Updated upstream
     const detail = e.response?.data?.detail
     error.value = Array.isArray(detail)
       ? detail.map((x) => x.msg || x).join('. ')
@@ -149,6 +150,14 @@ async function handleReportar() {
     if (typeof error.value === 'object') error.value = JSON.stringify(error.value)
   } finally {
     enviando.value = false
+=======
+    const detalle = e.response?.data?.detail
+    if (e.response?.status === 401) {
+      error.value = 'Sesi?n inv?lida o expirada. Cierra sesi?n, vuelve a iniciar sesi?n e intenta de nuevo.'
+    } else {
+      error.value = detalle || e.message || 'Error al reportar'
+    }
+>>>>>>> Stashed changes
   }
 }
 </script>

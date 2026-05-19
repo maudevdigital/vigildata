@@ -1,14 +1,21 @@
 <script setup>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/authStore'
 
+const route = useRoute()
 const router = useRouter()
 const auth = useAuthStore()
 const email = ref('')
 const password = ref('')
 const error = ref('')
 const cargando = ref(false)
+
+onMounted(() => {
+  if (route.query.sesion === 'expirada') {
+    error.value = 'Tu sesión expiró o no es válida. Inicia sesión nuevamente.'
+  }
+})
 
 async function handleLogin() {
   error.value = ''
