@@ -4,6 +4,8 @@ import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { useIncidentesStore } from '../stores/incidentesStore'
 import { regionesData } from '../utils/regiones'
+import IncidenteResumen from '../components/IncidenteResumen.vue'
+import api from '../services/api'
 
 const incidentesStore = useIncidentesStore()
 const mapContainer = ref(null)
@@ -14,6 +16,7 @@ const fechaInicio = ref('')
 const fechaFin = ref('')
 const cargando = ref(false)
 const error = ref('')
+const resumen = ref({ total: 0, por_comuna: [], por_tipo: [] })
 let map = null
 let markersLayer = null
 
@@ -86,11 +89,23 @@ function actualizarMarcadores(incidentes) {
   })
 }
 
+async function cargarResumen(params = {}) {
+  try {
+    const res = await api.get('/incidentes/resumen', { params })
+    resumen.value = res.data
+  } catch (e) {
+    resumen.value = { total: 0, por_comuna: [], por_tipo: [] }
+  }
+}
+
 async function cargarIncidentes(params = {}) {
   cargando.value = true
   error.value = ''
   try {
-    await incidentesStore.cargar(params)
+    await Promise.all([
+      incidentesStore.cargar(params),
+      cargarResumen(params),
+    ])
     actualizarMarcadores(incidentesStore.incidentes)
   } catch (e) {
     error.value = e.response?.data?.detail || 'No se pudieron cargar los incidentes'
@@ -205,5 +220,6 @@ onMounted(async () => {
         </div>
       </div>
     </div>
+    <IncidenteResumen :resumen="resumen" :cargando="cargando" />
   </div>
 </template>
