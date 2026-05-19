@@ -4,12 +4,59 @@ import { useRoute } from 'vue-router'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { useIncidentesStore } from '../stores/incidentesStore'
+import { useAuthStore } from '../stores/authStore'
 import { regionesData } from '../utils/regiones'
 import IncidenteResumen from '../components/IncidenteResumen.vue'
 import api from '../services/api'
 
 const route = useRoute()
+const auth = useAuthStore()
 const incidentesStore = useIncidentesStore()
+
+const tipos = ['Robo', 'Asalto', 'Vandalismo', 'Iluminación deficiente', 'Accidente', 'Otro']
+const niveles = ['Bajo', 'Medio', 'Alto']
+
+const modalAbierto = ref(false)
+const enviando = ref(false)
+const errorModal = ref('')
+const nuevo = ref({ lat: 0, lon: 0, tipo: '', nivel_riesgo: 'Bajo', descripcion: '', region: '', comuna: '' })
+const comunasNuevo = computed(() => {
+  const r = regionesData.find((x) => x.nombre === nuevo.value.region)
+  return r ? [...r.comunas].sort() : []
+})
+
+function abrirModalReporte(latlng) {
+  if (!auth.estaAutenticado) {
+    error.value = 'Tenés que iniciar sesión para reportar un incidente.'
+    return
+  }
+  nuevo.value = { lat: latlng.lat, lon: latlng.lng, tipo: '', nivel_riesgo: 'Bajo', descripcion: '', region: '', comuna: '' }
+  errorModal.value = ''
+  modalAbierto.value = true
+}
+
+async function enviarReporte() {
+  errorModal.value = ''
+  enviando.value = true
+  try {
+    await incidentesStore.crear({
+      tipo: nuevo.value.tipo,
+      descripcion: nuevo.value.descripcion,
+      latitud: nuevo.value.lat,
+      longitud: nuevo.value.lon,
+      region: nuevo.value.region || null,
+      comuna: nuevo.value.comuna || null,
+      nivel_riesgo: nuevo.value.nivel_riesgo,
+    })
+    modalAbierto.value = false
+    await cargarIncidentes(construirFiltros())
+    map.flyTo([nuevo.value.lat, nuevo.value.lon], Math.max(map.getZoom(), 15), { duration: 1.2 })
+  } catch (e) {
+    errorModal.value = e.response?.data?.detail || e.message || 'No se pudo crear el reporte'
+  } finally {
+    enviando.value = false
+  }
+}
 const mapContainer = ref(null)
 const region = ref('')
 const comuna = ref('')
@@ -156,6 +203,8 @@ onMounted(async () => {
 
   markersLayer = L.layerGroup().addTo(map)
 
+  map.on('click', (e) => abrirModalReporte(e.latlng))
+
   await cargarIncidentes()
 
   const lat = Number.parseFloat(route.query.lat)
@@ -230,5 +279,65 @@ onMounted(async () => {
       </div>
     </div>
     <IncidenteResumen :resumen="resumen" :cargando="cargando" />
+
+    <div
+      v-if="modalAbierto"
+      class="absolute inset-0 z-[2000] bg-black/40 flex items-center justify-center p-4"
+      @click.self="modalAbierto = false"
+    >
+      <form
+        @submit.prevent="enviarReporte"
+        class="bg-white rounded-lg shadow-xl w-full max-w-md p-5 max-h-[90vh] overflow-y-auto"
+      >
+        <h3 class="text-lg font-bold mb-1">Reportar incidente</h3>
+        <p class="text-xs text-gray-500 mb-3">
+          Ubicación: {{ nuevo.lat.toFixed(5) }}, {{ nuevo.lon.toFixed(5) }}
+        </p>
+        <div v-if="errorModal" class="bg-red-100 text-red-700 p-2 rounded mb-3 text-xs">{{ errorModal }}</div>
+        <div class="space-y-3">
+          <div>
+            <label class="block text-xs font-medium mb-1">Tipo</label>
+            <select v-model="nuevo.tipo" required class="w-full border rounded px-3 py-2 text-sm">
+              <option value="" disabled>Selecciona...</option>
+              <option v-for="t in tipos" :key="t" :value="t">{{ t }}</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-medium mb-1">Nivel de riesgo</label>
+            <select v-model="nuevo.nivel_riesgo" required class="w-full border rounded px-3 py-2 text-sm">
+              <option v-for="n in niveles" :key="n" :value="n">{{ n }}</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-medium mb-1">Descripción</label>
+            <textarea v-model="nuevo.descripcion" required rows="3" class="w-full border rounded px-3 py-2 text-sm"></textarea>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-medium mb-1">Región (opcional)</label>
+              <select v-model="nuevo.region" @change="nuevo.comuna = ''" class="w-full border rounded px-2 py-2 text-sm">
+                <option value="">—</option>
+                <option v-for="r in regionesOrdenadas" :key="r.nombre" :value="r.nombre">{{ r.nombre }}</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-medium mb-1">Comuna</label>
+              <select v-model="nuevo.comuna" :disabled="!nuevo.region" class="w-full border rounded px-2 py-2 text-sm disabled:bg-gray-100">
+                <option value="">—</option>
+                <option v-for="c in comunasNuevo" :key="c" :value="c">{{ c }}</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="flex gap-2 mt-4">
+          <button type="button" class="flex-1 border border-gray-300 text-gray-700 py-2 rounded text-sm hover:bg-gray-50" @click="modalAbierto = false" :disabled="enviando">
+            Cancelar
+          </button>
+          <button type="submit" class="flex-1 bg-red-600 text-white py-2 rounded text-sm hover:bg-red-700 disabled:opacity-60" :disabled="enviando">
+            {{ enviando ? 'Enviando...' : 'Reportar' }}
+          </button>
+        </div>
+      </form>
+    </div>
   </div>
 </template>
