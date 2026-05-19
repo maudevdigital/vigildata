@@ -3,6 +3,7 @@ import { onMounted, ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
+import 'leaflet.heat'
 import { useIncidentesStore } from '../stores/incidentesStore'
 import { useAuthStore } from '../stores/authStore'
 import { regionesData } from '../utils/regiones'
@@ -68,6 +69,17 @@ const error = ref('')
 const resumen = ref({ total: 0, por_comuna: [], por_tipo: [] })
 let map = null
 let markersLayer = null
+let heatLayer = null
+const heatmapActivo = ref(false)
+
+const ICONOS_TIPO = {
+  'Robo': '💰',
+  'Asalto': '⚠️',
+  'Vandalismo': '🔨',
+  'Iluminación deficiente': '💡',
+  'Accidente': '🚗',
+  'Otro': '❗',
+}
 
 const regionesOrdenadas = computed(() => {
   return [...regionesData].sort((a, b) => a.nombre.localeCompare(b.nombre))
@@ -93,22 +105,53 @@ function normalizarFechaFin(valor) {
   return `${valor}T23:59:59`
 }
 
-function obtenerIconoRiesgo(nivel) {
-  let color = '#22c55e' // Default / Bajo (verde)
-  if (nivel === 'Medio') color = '#eab308' // amarillo
-  else if (nivel === 'Alto') color = '#ef4444' // rojo
-  
-  const svgIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="${color}" width="32" height="32" stroke="white" stroke-width="1.5" style="filter: drop-shadow(0px 2px 2px rgba(0,0,0,0.5));">
-    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-  </svg>`;
+function obtenerIconoIncidente(tipo, nivel) {
+  let color = '#22c55e'
+  if (nivel === 'Medio') color = '#eab308'
+  else if (nivel === 'Alto') color = '#ef4444'
+
+  const emoji = ICONOS_TIPO[tipo] || '❗'
+  const html = `
+    <div style="position:relative;width:38px;height:46px;filter:drop-shadow(0 2px 3px rgba(0,0,0,0.4));">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 30" width="38" height="46" style="position:absolute;top:0;left:0;">
+        <path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 18 12 18s12-9 12-18c0-6.6-5.4-12-12-12z" fill="${color}" stroke="white" stroke-width="1.5"/>
+        <circle cx="12" cy="12" r="8" fill="white"/>
+      </svg>
+      <div style="position:absolute;top:3px;left:0;width:38px;height:38px;display:flex;align-items:center;justify-content:center;font-size:18px;line-height:1;">${emoji}</div>
+    </div>`
 
   return L.divIcon({
-    className: 'custom-div-icon',
-    html: svgIcon,
-    iconSize: [32, 32],
-    iconAnchor: [16, 32],
-    popupAnchor: [0, -32]
+    className: 'vigildata-marker',
+    html,
+    iconSize: [38, 46],
+    iconAnchor: [19, 46],
+    popupAnchor: [0, -42],
   })
+}
+
+function actualizarHeatmap(incidentes) {
+  if (!map) return
+  if (heatLayer) {
+    map.removeLayer(heatLayer)
+    heatLayer = null
+  }
+  if (!heatmapActivo.value) return
+  const pesos = { 'Bajo': 0.4, 'Medio': 0.7, 'Alto': 1.0 }
+  const puntos = incidentes
+    .filter((i) => i.estado !== 'rechazado')
+    .map((i) => [i.latitud, i.longitud, pesos[i.nivel_riesgo] || 0.6])
+  heatLayer = L.heatLayer(puntos, { radius: 35, blur: 25, maxZoom: 17 }).addTo(map)
+}
+
+function toggleHeatmap() {
+  heatmapActivo.value = !heatmapActivo.value
+  actualizarHeatmap(incidentesStore.incidentes)
+}
+
+function reportarEnCentro() {
+  if (!map) return
+  const c = map.getCenter()
+  abrirModalReporte({ lat: c.lat, lng: c.lng })
 }
 
 function actualizarMarcadores(incidentes) {
@@ -130,12 +173,13 @@ function actualizarMarcadores(incidentes) {
       estadoTexto = '<span style="color: #16a34a; font-weight: bold;">(Aprobado)</span>'
     }
 
-    L.marker([inc.latitud, inc.longitud], { icon: obtenerIconoRiesgo(inc.nivel_riesgo) })
+    L.marker([inc.latitud, inc.longitud], { icon: obtenerIconoIncidente(inc.tipo, inc.nivel_riesgo) })
       .addTo(markersLayer)
       .bindPopup(
         `<strong>${inc.tipo}</strong> ${estadoTexto}<br>${riesgoTexto}<br>${inc.descripcion}<br><small>${fechaTexto}</small><br><small>${regionTexto} - ${comunaTexto}</small>`
       )
   })
+  actualizarHeatmap(incidentes)
 }
 
 async function cargarResumen(params = {}) {
@@ -279,6 +323,26 @@ onMounted(async () => {
       </div>
     </div>
     <IncidenteResumen :resumen="resumen" :cargando="cargando" />
+
+    <button
+      type="button"
+      class="absolute z-[1100] top-4 left-4 bg-white/95 backdrop-blur rounded-lg shadow px-3 py-2 text-sm font-medium hover:bg-white"
+      @click="toggleHeatmap"
+      :title="heatmapActivo ? 'Ocultar zonas calientes' : 'Mostrar zonas calientes'"
+    >
+      🔥 {{ heatmapActivo ? 'Ocultar heatmap' : 'Ver heatmap' }}
+    </button>
+
+    <button
+      type="button"
+      class="absolute z-[1100] bottom-6 right-6 w-16 h-16 rounded-full bg-red-600 text-white shadow-lg hover:bg-red-700 active:scale-95 transition flex items-center justify-center"
+      @click="reportarEnCentro"
+      title="Reportar incidente en el centro del mapa (o hacé click en cualquier punto)"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="28" height="28" fill="currentColor">
+        <path d="M12 5v14M5 12h14" stroke="white" stroke-width="3" stroke-linecap="round"/>
+      </svg>
+    </button>
 
     <div
       v-if="modalAbierto"
