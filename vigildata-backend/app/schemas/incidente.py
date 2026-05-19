@@ -40,3 +40,14 @@ class IncidenteFiltro(BaseModel):
     comuna: Optional[str] = None
     fecha_inicio: Optional[datetime] = None
     fecha_fin: Optional[datetime] = None
+
+
+class ConteoItem(BaseModel):
+    etiqueta: str
+    total: int
+
+
+class IncidenteResumenResponse(BaseModel):
+    total: int
+    por_comuna: list[ConteoItem]
+    por_tipo: list[ConteoItem]
