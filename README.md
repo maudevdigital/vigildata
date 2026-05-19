@@ -18,8 +18,8 @@ VigilData es una aplicación web para reportar y visualizar incidentes de seguri
 
 1. Python 3.13+
 2. Node.js 20+
-3. Cuenta de Supabase
-4. Git
+3. Git
+4. (Opcional) Cuenta de Supabase — no es necesaria para correr el proyecto en local, ver sección 2.
 
 ## 1. Clonar el repositorio
 
@@ -28,12 +28,20 @@ git clone https://github.com/maudevdigital/vigildata.git
 cd vigildata
 ```
 
-## 2. Configurar Supabase
+## 2. Elegir base de datos
+
+El backend soporta dos opciones de `DATABASE_URL`. Elegir UNA según el caso:
+
+### Opción A — SQLite local (por defecto, recomendada para desarrollo/demo)
+
+No requiere cuenta ni red. La BD se crea sola al primer arranque en `vigildata-backend/local-demo.db`. Saltar a la sección 3.
+
+### Opción B — Supabase (producción)
 
 1. Crear un proyecto en Supabase.
-2. Ir a `Project Settings > Database > Connection string > Session pooler`.
-3. Copiar la URI de conexión.
-4. Ir a `Project Settings > API Keys` y copiar la `publishable key`.
+2. Ir a `Project Settings > Database > Connection string > Session pooler`. Copiar la URI.
+3. Ir a `Project Settings > API Keys` y copiar la `publishable key` (solo si el frontend usa supabase-js directamente).
+4. En la sección 3 reemplazar `DATABASE_URL` por la URI de Supabase (ver `vigildata-backend/.env.example`).
 
 ## 3. Backend
 
@@ -50,14 +58,21 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-Crear `vigildata-backend/.env`:
+Copiar `vigildata-backend/.env.example` a `vigildata-backend/.env`. El archivo trae las dos opciones de `DATABASE_URL`:
 
 ```env
-DATABASE_URL=postgresql://postgres.xxxxx:[PASSWORD]@aws-x-region.pooler.supabase.com:5432/postgres?sslmode=require
+# Opción A — SQLite local (activa por defecto)
+DATABASE_URL=sqlite:///./local-demo.db
+
+# Opción B — Supabase (descomentar y rellenar)
+# DATABASE_URL=postgresql://postgres.xxxxx:[PASSWORD]@aws-x-region.pooler.supabase.com:5432/postgres?sslmode=require
+
 SECRET_KEY=una-clave-secreta-segura
 ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=60
 ```
+
+El admin seed (`admin@vigildata.cl` / `admin123`) se crea automáticamente en el primer arranque, sea cual sea la BD.
 
 Ejecutar el servidor:
 
@@ -128,7 +143,7 @@ vigildata/
 | Frontend | Vue 3, Vite, Pinia, TailwindCSS |
 | Mapa | Leaflet.js, OpenStreetMap |
 | Backend | FastAPI, Pydantic, SQLAlchemy |
-| Base de datos | Supabase PostgreSQL |
+| Base de datos | SQLite (local) o Supabase PostgreSQL (producción) |
 | Autenticación | JWT, bcrypt |
 | Cliente HTTP | Axios |
 
