@@ -100,7 +100,7 @@ async function handleReportar() {
 
 <template>
   <div class="flex justify-center mt-10">
-    <form @submit.prevent="handleReportar" class="bg-white p-8 rounded-lg shadow-md w-96">
+    <form @submit.prevent="handleReportar" class="bg-white p-4 sm:p-8 rounded-lg shadow-md w-full max-w-md vigil-form">
       <h2 class="text-2xl font-bold mb-6 text-center">Reportar Incidente</h2>
       <div v-if="error" class="bg-red-100 text-red-700 p-2 rounded mb-4 text-sm">{{ error }}</div>
       <div v-if="exito" class="bg-green-100 text-green-700 p-2 rounded mb-4 text-sm">
@@ -177,7 +177,7 @@ async function handleReportar() {
       <p class="text-xs text-gray-500 mb-4">
         La ubicación GPS puede completarse automáticamente o ingresarse manualmente.
       </p>
-      <button type="submit" class="w-full bg-red-600 text-white py-2 rounded hover:bg-red-700">
+      <button type="submit" class="w-full bg-red-600 text-white py-2 rounded hover:bg-red-700 touch-target submit-sticky">
         Reportar
       </button>
     </form>

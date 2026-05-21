@@ -58,7 +58,23 @@ onMounted(() => {
       <div v-if="pendientes.length === 0" class="p-6 text-center text-gray-400">
         No hay incidentes pendientes de revisión.
       </div>
-      <table v-else class="w-full text-sm">
+      <div v-if="pendientes.length > 0" class="vigil-admin-cards p-3">
+        <div v-for="inc in pendientes" :key="'card-'+inc.id" class="border rounded-lg p-3 bg-white shadow-sm">
+          <div class="flex justify-between items-start">
+            <div>
+              <div class="font-semibold text-sm">#{{ inc.id }} · {{ inc.tipo }}</div>
+              <div class="text-xs text-gray-600">{{ inc.comuna || '—' }} · Riesgo: {{ inc.nivel_riesgo || '—' }}</div>
+              <div class="text-xs text-gray-400 mt-1">{{ new Date(inc.fecha).toLocaleString('es-CL') }}</div>
+            </div>
+          </div>
+          <div v-if="auth.esAdmin" class="grid grid-cols-3 gap-2 mt-3">
+            <button @click="cambiarEstado(inc.id, 'aprobado')" class="bg-green-600 text-white py-2 rounded text-xs touch-target">Aprobar</button>
+            <button @click="cambiarEstado(inc.id, 'rechazado')" class="bg-orange-500 text-white py-2 rounded text-xs touch-target">Rechazar</button>
+            <button @click="eliminarIncidente(inc.id)" class="bg-red-600 text-white py-2 rounded text-xs touch-target">Borrar</button>
+          </div>
+        </div>
+      </div>
+      <table v-if="pendientes.length > 0" class="w-full text-sm vigil-admin-table">
         <thead class="bg-gray-50 text-gray-600 uppercase text-xs">
           <tr>
             <th class="px-4 py-3 text-left">#</th>

@@ -7,7 +7,12 @@ import { useIncidentesStore } from '../stores/incidentesStore'
 import { useAuthStore } from '../stores/authStore'
 import { regionesData } from '../utils/regiones'
 import IncidenteResumen from '../components/IncidenteResumen.vue'
+import BottomSheet from '../components/BottomSheet.vue'
 import api from '../services/api'
+import { reverseGeocode } from '../services/geocoding'
+
+const filtrosAbiertos = ref(false)
+const detectandoUbicacion = ref(false)
 
 const route = useRoute()
 const auth = useAuthStore()
@@ -25,7 +30,7 @@ const comunasNuevo = computed(() => {
   return r ? [...r.comunas].sort() : []
 })
 
-function abrirModalReporte(latlng) {
+async function abrirModalReporte(latlng) {
   if (!auth.estaAutenticado) {
     error.value = 'Tenés que iniciar sesión para reportar un incidente.'
     return
@@ -33,6 +38,14 @@ function abrirModalReporte(latlng) {
   nuevo.value = { lat: latlng.lat, lon: latlng.lng, tipo: '', nivel_riesgo: 'Bajo', descripcion: '', region: '', comuna: '' }
   errorModal.value = ''
   modalAbierto.value = true
+  detectandoUbicacion.value = true
+  try {
+    const { region, comuna } = await reverseGeocode(latlng.lat, latlng.lng)
+    if (region) nuevo.value.region = region
+    if (comuna) nuevo.value.comuna = comuna
+  } finally {
+    detectandoUbicacion.value = false
+  }
 }
 
 async function enviarReporte() {
@@ -219,8 +232,21 @@ onMounted(async () => {
 <template>
   <div class="relative w-full" style="height: calc(100dvh - 56px); min-height: 360px">
     <div ref="mapContainer" class="w-full h-full"></div>
+    <button
+      type="button"
+      class="md:hidden absolute z-[1100] top-3 right-3 bg-white/95 backdrop-blur rounded-full shadow px-4 py-2 text-sm touch-target"
+      @click="filtrosAbiertos = true"
+    >
+      Filtros
+    </button>
+    <button
+      type="button"
+      class="md:hidden fab"
+      aria-label="Reportar aqui"
+      @click="abrirModalReporte({ lat: map ? map.getCenter().lat : -33.45, lng: map ? map.getCenter().lng : -70.66 })"
+    >＋</button>
     <div
-      class="absolute z-[1000] top-4 right-4 w-[calc(100%-4rem)] md:w-96 bg-white/95 backdrop-blur rounded-lg shadow p-4"
+      class="hidden md:block absolute z-[1000] top-4 right-4 w-[calc(100%-4rem)] md:w-96 bg-white/95 backdrop-blur rounded-lg shadow p-4"
     >
       <h3 class="font-semibold text-sm mb-3">Filtrar incidentes</h3>
       <div v-if="error" class="bg-red-100 text-red-700 p-2 rounded mb-3 text-xs">{{ error }}</div>
@@ -280,6 +306,33 @@ onMounted(async () => {
     </div>
     <IncidenteResumen :resumen="resumen" :cargando="cargando" />
 
+    <BottomSheet v-model:abierto="filtrosAbiertos" titulo="Filtrar incidentes">
+      <div class="grid grid-cols-1 gap-3">
+        <select v-model="region" @change="onRegionChange" class="w-full border rounded px-3 py-2 text-sm">
+          <option value="">Todas las regiones</option>
+          <option v-for="r in regionesOrdenadas" :key="r.nombre" :value="r.nombre">{{ r.nombre }}</option>
+        </select>
+        <select v-model="comuna" :disabled="!region" class="w-full border rounded px-3 py-2 text-sm disabled:bg-gray-100">
+          <option value="">Todas las comunas</option>
+          <option v-for="c in comunasDisponibles" :key="c" :value="c">{{ c }}</option>
+        </select>
+        <select v-model="nivelRiesgo" class="w-full border rounded px-3 py-2 text-sm">
+          <option value="">Todos los niveles</option>
+          <option value="Bajo">Bajo</option>
+          <option value="Medio">Medio</option>
+          <option value="Alto">Alto</option>
+        </select>
+        <div class="grid grid-cols-2 gap-2">
+          <input v-model="fechaInicio" type="date" class="w-full border rounded px-2 py-2 text-sm" />
+          <input v-model="fechaFin" type="date" class="w-full border rounded px-2 py-2 text-sm" />
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <button type="button" class="bg-red-600 text-white py-2 rounded text-sm touch-target" :disabled="cargando" @click="aplicarFiltros(); filtrosAbiertos = false">Aplicar</button>
+          <button type="button" class="border border-gray-300 text-gray-700 py-2 rounded text-sm touch-target" :disabled="cargando" @click="limpiarFiltros">Limpiar</button>
+        </div>
+      </div>
+    </BottomSheet>
+
     <div
       v-if="modalAbierto"
       class="absolute inset-0 z-[2000] bg-black/40 flex items-center justify-center p-4"
@@ -312,21 +365,26 @@ onMounted(async () => {
             <label class="block text-xs font-medium mb-1">Descripción</label>
             <textarea v-model="nuevo.descripcion" required rows="3" class="w-full border rounded px-3 py-2 text-sm"></textarea>
           </div>
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="block text-xs font-medium mb-1">Región (opcional)</label>
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label class="block text-xs font-medium">Ubicación</label>
+              <span v-if="detectandoUbicacion" class="text-xs text-blue-600 flex items-center gap-1">
+                <svg class="animate-spin" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" opacity="0.25"/><path d="M22 12a10 10 0 0 1-10 10" stroke-linecap="round"/></svg>
+                Detectando…
+              </span>
+              <span v-else-if="nuevo.region || nuevo.comuna" class="text-xs text-green-600">✓ Detectada</span>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
               <select v-model="nuevo.region" @change="nuevo.comuna = ''" class="w-full border rounded px-2 py-2 text-sm">
-                <option value="">—</option>
+                <option value="">Región —</option>
                 <option v-for="r in regionesOrdenadas" :key="r.nombre" :value="r.nombre">{{ r.nombre }}</option>
               </select>
-            </div>
-            <div>
-              <label class="block text-xs font-medium mb-1">Comuna</label>
               <select v-model="nuevo.comuna" :disabled="!nuevo.region" class="w-full border rounded px-2 py-2 text-sm disabled:bg-gray-100">
-                <option value="">—</option>
+                <option value="">Comuna —</option>
                 <option v-for="c in comunasNuevo" :key="c" :value="c">{{ c }}</option>
               </select>
             </div>
+            <p class="text-[10px] text-gray-400 mt-1">Detectada automáticamente desde el mapa. Podés ajustarla si es incorrecta.</p>
           </div>
         </div>
         <div class="flex gap-2 mt-4">
