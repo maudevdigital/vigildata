@@ -143,10 +143,15 @@ function actualizarMarcadores(incidentes) {
       estadoTexto = '<span style="color: #16a34a; font-weight: bold;">(Aprobado)</span>'
     }
 
+    let multiplesReportes = ''
+    if (inc.reportes_asociados > 1) {
+      multiplesReportes = `<br><span style="color: #6d28d9; font-weight: bold;">(${inc.reportes_asociados} reportes similares agrupados)</span>`
+    }
+
     L.marker([inc.latitud, inc.longitud], { icon: obtenerIconoRiesgo(inc.nivel_riesgo) })
       .addTo(markersLayer)
       .bindPopup(
-        `<strong>${inc.tipo}</strong> ${estadoTexto}<br>${riesgoTexto}<br>${inc.descripcion}<br><small>${fechaTexto}</small><br><small>${regionTexto} - ${comunaTexto}</small>`
+        `<strong>${inc.tipo}</strong> ${estadoTexto}<br>${riesgoTexto}<br>${inc.descripcion}${multiplesReportes}<br><small>${fechaTexto}</small><br><small>${regionTexto} - ${comunaTexto}</small>`
       )
   })
 }

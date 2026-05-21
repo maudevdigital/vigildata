@@ -30,6 +30,9 @@ def _aplicar_filtros(
     fecha_inicio: Optional[datetime] = None,
     fecha_fin: Optional[datetime] = None,
 ):
+    # Ocultar siempre los incidentes secundarios (hijos) para no inflar mapas ni estadisticas
+    query = query.filter(Incidente.incidente_raiz_id == None)
+
     if estado == "todos":
         pass
     elif estado == "pendiente":

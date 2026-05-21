@@ -27,7 +27,12 @@ export async function obtenerIdTokenGoogle() {
 
   await supabase.auth.signInWithOAuth({
     provider: 'google',
-    options: { redirectTo: window.location.origin + '/login' },
+    options: { 
+      redirectTo: window.location.origin + '/login',
+      queryParams: {
+        prompt: 'select_account'
+      }
+    },
   })
   // signInWithOAuth en modo redirect navega; el codigo siguiente solo aplica
   // si volvio del callback. Esperamos a que detectSessionInUrl complete.

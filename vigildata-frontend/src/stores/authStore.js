@@ -2,6 +2,8 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import api from '../services/api'
 
+import { cerrarSesionSupabase } from '../services/googleAuth'
+
 function parsearUsuarioDesdeStorage() {
   try {
     const raw = localStorage.getItem('usuario')
@@ -43,6 +45,7 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   function logout() {
+    cerrarSesionSupabase()
     token.value = ''
     usuario.value = null
     localStorage.removeItem('token')
