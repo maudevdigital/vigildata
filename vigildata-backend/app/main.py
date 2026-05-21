@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.database import engine, Base, SessionLocal
 from app.models import usuario as _u, incidente as _i  # noqa: ensure models are registered
-from app.routers import auth, incidentes
+from app.routers import auth, incidentes, auth_google
 
 
 def _seed_admin():
@@ -45,6 +45,7 @@ app.add_middleware(
 )
 
 app.include_router(auth.router)
+app.include_router(auth_google.router)
 app.include_router(incidentes.router)
 
 

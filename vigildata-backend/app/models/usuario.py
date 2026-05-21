@@ -16,6 +16,7 @@ class Usuario(Base):
     email = Column(String, unique=True, index=True, nullable=False)
     password = Column(String, nullable=False)
     rol = Column(SAEnum(Rol), default=Rol.CIUDADANO, nullable=False)
+    provider = Column(String, default="local", nullable=False)
 
     incidentes = relationship(
         "Incidente",
