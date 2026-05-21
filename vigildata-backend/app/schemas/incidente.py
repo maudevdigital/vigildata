@@ -28,6 +28,9 @@ class IncidenteResponse(BaseModel):
     estado: str
     revisado_por_email: Optional[str] = None
     fecha_revision: Optional[datetime] = None
+    incidente_raiz_id: Optional[int] = None
+    reportes_asociados: int = 1
+    auto_aprobado: bool = False
 
     model_config = {"from_attributes": True}
 

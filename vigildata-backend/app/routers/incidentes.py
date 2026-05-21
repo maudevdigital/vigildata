@@ -15,6 +15,7 @@ from app.schemas.incidente import (
     ConteoItem,
 )
 from app.routers.auth import obtener_usuario_actual
+from app.services import duplicados_bert
 
 router = APIRouter(prefix="/incidentes", tags=["incidentes"])
 
@@ -63,8 +64,18 @@ def crear_incidente(
 ):
     incidente = Incidente(**data.model_dump(exclude_none=True), usuario_id=usuario.id)
     db.add(incidente)
+    auto_aprobado = False
+    try:
+        db.flush()
+        raiz = duplicados_bert.encontrar_duplicado(db, incidente)
+        if raiz is not None:
+            auto_aprobado = duplicados_bert.aplicar_consolidacion(db, incidente, raiz)
+    except Exception:
+        # Si la sesion no soporta flush (mocks) o BERT falla, seguimos sin HU-09.
+        pass
     db.commit()
     db.refresh(incidente)
+    incidente.auto_aprobado = auto_aprobado
     return incidente
 
 

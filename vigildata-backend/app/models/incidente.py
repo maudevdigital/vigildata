@@ -20,6 +20,8 @@ class Incidente(Base):
     estado = Column(String, default="pendiente", nullable=False)
     revisado_por_id = Column(Integer, ForeignKey("usuarios.id"), nullable=True)
     fecha_revision = Column(DateTime(timezone=True), nullable=True)
+    incidente_raiz_id = Column(Integer, ForeignKey("incidentes.id"), nullable=True)
+    reportes_asociados = Column(Integer, default=1, nullable=False)
 
     usuario = relationship("Usuario", foreign_keys=[usuario_id], back_populates="incidentes")
     revisador = relationship("Usuario", foreign_keys=[revisado_por_id])
