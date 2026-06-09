@@ -1,3 +1,4 @@
+import os
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -36,9 +37,15 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# Origenes permitidos: localhost para dev + los que se definan en CORS_ORIGINS
+# (separados por coma) para produccion, p.ej. el dominio de Vercel del frontend.
+_default_origins = ["http://localhost:5173"]
+_extra_origins = [o.strip() for o in os.getenv("CORS_ORIGINS", "").split(",") if o.strip()]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=_default_origins + _extra_origins,
+    allow_origin_regex=os.getenv("CORS_ORIGIN_REGEX") or None,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

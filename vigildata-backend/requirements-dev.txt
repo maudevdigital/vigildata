@@ -1,0 +1,7 @@
+# Dependencias para desarrollo local / CI (no se instalan en Vercel).
+-r requirements.txt
+alembic==1.13.3
+pytest==8.3.3
+pytest-cov==5.0.0
+# HU-09 - similitud semantica con BERT (opcional, hay fallback hashing).
+sentence-transformers==3.0.1

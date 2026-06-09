@@ -30,3 +30,5 @@ src/counter.ts
 src/main.ts
 src/assets/
 public/
+
+.vercel
