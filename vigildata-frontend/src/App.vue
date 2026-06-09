@@ -29,7 +29,7 @@ function navegar(ruta) {
         <div class="hidden md:flex items-center space-x-4 text-sm">
           <template v-if="auth.estaAutenticado">
             <router-link to="/mapa" class="hover:underline">Mapa</router-link>
-            <router-link to="/reportar" class="hover:underline">Reportar</router-link>
+            <!-- <router-link to="/reportar" class="hover:underline">Reportar</router-link> -->
             <router-link v-if="auth.esAdmin" to="/admin" class="hover:underline font-semibold text-yellow-300">
               Panel Admin
             </router-link>
@@ -70,7 +70,7 @@ function navegar(ruta) {
           <template v-if="auth.estaAutenticado">
             <div class="px-4 py-3 text-xs text-blue-200 truncate">{{ auth.usuario?.email }}</div>
             <button @click="navegar('/mapa')" class="block w-full text-left px-4 py-3 hover:bg-blue-800 touch-target">Mapa</button>
-            <button @click="navegar('/reportar')" class="block w-full text-left px-4 py-3 hover:bg-blue-800 touch-target">Reportar</button>
+            <!-- <button @click="navegar('/reportar')" class="block w-full text-left px-4 py-3 hover:bg-blue-800 touch-target">Reportar</button> -->
             <button v-if="auth.esAdmin" @click="navegar('/admin')" class="block w-full text-left px-4 py-3 hover:bg-blue-800 font-semibold text-yellow-300 touch-target">Panel Admin</button>
             <button @click="cerrarSesion" class="block w-full text-left px-4 py-3 bg-blue-900 hover:bg-blue-800 touch-target">Salir</button>
           </template>
