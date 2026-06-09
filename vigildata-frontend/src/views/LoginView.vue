@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/authStore'
 import { obtenerIdTokenGoogle } from '../services/googleAuth'
@@ -37,6 +37,12 @@ async function handleGoogleLogin() {
     cargando.value = false
   }
 }
+
+// Al volver del callback de Google (la URL trae #access_token=...) completamos
+// el ingreso automaticamente sin que el usuario tenga que volver a tocar el boton.
+onMounted(() => {
+  if (window.location.hash.includes('access_token')) handleGoogleLogin()
+})
 </script>
 
 <template>
