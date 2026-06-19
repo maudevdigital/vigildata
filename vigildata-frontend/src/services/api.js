@@ -13,4 +13,20 @@ api.interceptors.request.use((config) => {
   return config
 })
 
+// Si el backend responde 401 (token vencido o inválido) limpiamos la sesion y
+// mandamos a login, en vez de fallar en silencio en consola.
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem('token')
+      localStorage.removeItem('usuario')
+      if (window.location.pathname !== '/login') {
+        window.location.assign('/login')
+      }
+    }
+    return Promise.reject(error)
+  }
+)
+
 export default api
