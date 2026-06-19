@@ -1,6 +1,6 @@
 # Estado actual de Taiga - VigilData
 
-Fecha de consulta directa: 03/05/2026  
+Fecha de consulta directa: 2026-06-19 (re-verificado vía API para Hito 3; consulta previa 03/05/2026)  
 Proyecto Taiga: Ingenieria de software 1  
 Slug: `maudevdigital-ingenieria-de-software-1`  
 ID de proyecto: `1786600`  
@@ -25,7 +25,7 @@ Mapa colaborativo de seguridad ciudadana que permite a los habitantes de una com
 |--------|---------------------|-----------------|-----------|-----------------|
 | Sprint 1 | 2026-04-20 - 2026-04-28 | Cerrado | 2 | 100.0/100.0 |
 | Sprint 2 | 2026-04-29 - 2026-05-05 | Cerrado | 3 | 150.0/150.0 |
-| Sprint 3 | 2026-05-06 - 2026-05-12 | Abierto | 3 | Sin puntos cerrados |
+| Sprint 3 | 2026-05-06 - 2026-05-12 | Cerrado | 6 | Todas las HU en Done |
 
 ## Historias de usuario
 
@@ -36,9 +36,12 @@ Mapa colaborativo de seguridad ciudadana que permite a los habitantes de una com
 | #3 | HU-03: Reportar incidente con GPS | Sprint 1 | Done | Sebastian Lopez Cisternas | Si |
 | #4 | HU-04: Ver mapa con incidentes | Sprint 1 | Done | benjaosan | Si |
 | #5 | HU-05: Filtrar incidentes por comuna y fecha | Sprint 2 | Done | Sebastian Lopez Cisternas | Si |
-| #16 | HU-06: Clasificar incidente por tipo y nivel de riesgo | Sprint 3 | New | Sebastian Lopez Cisternas | No |
-| #17 | HU-07: Moderar incidentes reportados | Sprint 3 | New | Sebastian Lopez Cisternas | No |
-| #18 | HU-08: Ver resumen de incidentes por comuna y tipo | Sprint 3 | New | benjaosan | No |
+| #16 | HU-06: Clasificar incidente por tipo y nivel de riesgo | Sprint 3 | Done | Sebastian Lopez Cisternas | Si |
+| #17 | HU-07: Moderar incidentes reportados | Sprint 3 | Done | Sebastian Lopez Cisternas | Si |
+| #18 | HU-08: Ver resumen de incidentes por comuna y tipo | Sprint 3 | Done | benjaosan | Si |
+| #54 | HU-09: Control de repeticion de denuncias con BERT | Sprint 3 | Done | maudevdigital | Si |
+| #61 | HU-10: Autenticacion con Google | Sprint 3 | Done | maudevdigital | Si |
+| #67 | HU-11: Mejorar interfaz movil (Reportar, Mapa, Admin) | Sprint 3 | Done | maudevdigital | Si |
 
 ## Tareas tecnicas registradas
 
@@ -73,17 +76,21 @@ Mapa colaborativo de seguridad ciudadana que permite a los habitantes de una com
 | #33 | [Back] Implementar filtros comuna, fecha_inicio y fecha_fin | HU-05 | Closed | Sebastian Lopez Cisternas |
 | #34 | [Back] Validar combinacion de filtros y formato de fechas | HU-05 | Closed | Sebastian Lopez Cisternas |
 
+## Tareas tecnicas (resumen Hito 3)
+
+Al 2026-06-19: **30 tareas tecnicas registradas, todas en estado Closed.**
+
 ## Issues
 
-No hay issues registrados en Taiga al momento de la consulta directa.
+No hay issues registrados en Taiga (0 issues al 2026-06-19).
 
-## Observaciones para el video
+## Observaciones (estado final Hito 3)
 
-- Sprint 1 aparece cerrado en Taiga.
-- Sprint 2 tambien aparece cerrado en Taiga, aunque su fecha planificada llega hasta el 05/05/2026.
-- HU-01, HU-02, HU-03, HU-04 y HU-05 aparecen en estado Done y cerradas.
-- Sprint 3 aparece abierto con HU-06, HU-07 y HU-08 en estado New.
-- No existen issues formales registrados.
+- Los tres sprints (1, 2 y 3) aparecen **cerrados** en Taiga.
+- Las 11 historias HU-01 a HU-11 estan en estado **Done** y cerradas.
+- Sprint 3 quedo cerrado con las 6 historias HU-06 a HU-11 en Done.
+- Las 30 tareas tecnicas estan cerradas y no existen issues abiertos.
+- El tablero de Taiga esta **alineado con el codigo entregado**.
 - El guion del Product Owner debe presentar Sprint 1 y Sprint 2 como incrementos cerrados hasta la consulta directa del 03/05/2026.
 - Las tecnicas de prueba acordadas para el video son caja negra, aceptacion y unitarias.
 - Las pruebas las ejecuta o demuestra el Scrum Team/developers; el Product Owner valida contra criterios de aceptacion.

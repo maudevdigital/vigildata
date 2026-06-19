@@ -40,8 +40,9 @@ evidencia concreta en el repositorio y el sistema desplegado.
 | HU-10 | Autenticación con Google (Supabase Auth) | 3 | ✅ Done |
 | HU-11 | Mejoras de interfaz móvil | 3 | ✅ Done |
 
-> **Pendiente de gestión:** el tablero de Taiga refleja hasta HU-08; HU-09/10/11
-> deben crearse/cerrarse en Taiga para alinear la trazabilidad con el código.
+> **Trazabilidad Taiga (verificada vía API el 2026-06-19):** las 11 historias
+> están en estado *Done* y cerradas; las 30 tareas técnicas, cerradas; los 3
+> sprints, cerrados; 0 issues abiertos. El tablero está alineado con el código.
 
 ---
 
