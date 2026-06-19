@@ -20,7 +20,6 @@
 | `14_arquitectura_final.md` | Arquitectura final del sistema al cierre del Hito 3 (componentes, datos, despliegue, decisiones). |
 | `15_manual_tecnico.md` | Manual tecnico: estructura, API REST, servicios, autenticacion y variables de entorno. |
 | `16_manual_instalacion.md` | Manual de instalacion verificado (camino rapido para levantar el sistema). |
-| `17_entrega_hito3.md` | Documento maestro de la entrega Hito 3: mapeo rubrica -> evidencia. |
 | `../VigilData_Arquitectura_4+1_v2.docx` | Documento DOCX principal del proyecto. |
 
 ## Contexto

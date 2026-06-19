@@ -157,14 +157,14 @@ sin perder el conteo (HU-09).
 
 | Componente | Entorno | URL (producción) |
 |------------|---------|------------------|
-| Frontend (SPA) | Vercel | `https://vigildata-frontend-…vercel.app` |
-| Backend (API) | Vercel | `https://vigildata-backend-…vercel.app` |
+| Frontend (SPA) | Vercel | `https://vigildata-frontend.vercel.app` |
+| Backend (API) | Vercel | `https://vigildata-backend.vercel.app` |
 | Base de datos | Supabase (PostgreSQL gestionado) | `mdcualtcxwlxsivemkmf.supabase.co` |
 | Auth Google | Supabase Auth | provider Google habilitado |
 
-> Las URLs exactas con hash de despliegue se listan en GitHub → pestaña
-> **Deployments**. Para desarrollo local: frontend `http://localhost:5173`,
-> backend `http://localhost:8000`.
+> Ambos dominios de producción son públicos (el backend responde en `/` y expone
+> la documentación interactiva en `/docs`). Para desarrollo local: frontend
+> `http://localhost:5173`, backend `http://localhost:8000`.
 
 ---
 

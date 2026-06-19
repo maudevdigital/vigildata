@@ -72,7 +72,10 @@ cd vigildata-backend && pytest      # 25 pruebas, cobertura ~76%
 ```
 
 ## 5. Despliegue (producción)
-Frontend y backend están desplegados en **Vercel** (ver pestaña *Deployments* del
-repositorio en GitHub). El backend usa `index.py` + `vercel.json`
-(`@vercel/python`); el frontend se construye con `npm run build` → `dist/`.
-La base de datos productiva es PostgreSQL gestionado por Supabase.
+Frontend y backend están desplegados en **Vercel** y son de acceso público:
+- Frontend: `https://vigildata-frontend.vercel.app`
+- Backend (API): `https://vigildata-backend.vercel.app` (documentación en `/docs`)
+
+El backend usa `index.py` + `vercel.json` (`@vercel/python`); el frontend se
+construye con `npm run build` → `dist/`. La base de datos productiva es
+PostgreSQL gestionado por Supabase.
